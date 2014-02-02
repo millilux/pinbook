@@ -23,24 +23,34 @@ function getJSON(url, callback){
 
 function init(tabId, changeInfo, tab){
 
-    /* Check if this tab's URL has been bookmarked already.
-       We check the local cache first, and if that's empty fire off a request to the API.
-       The icon's are toggled as appropriate;
-    */
-    // TODO: If pinboard is edited outside of Chrome, it'll be out of sync? Maybe don't bother with the cache?
-    // Or give it an expiry time?
-    if (savedPosts.hasOwnProperty(tab.url)){
-        chrome.pageAction.setIcon({ tabId : tab.id, path : "icon_active.png"});
-    } else {
-        getPost(tab.url, function(data){
-            if (data.posts.length > 0){
+    chrome.storage.local.get("authToken", function(data){
+        if (! data.hasOwnProperty("authToken")){
+
+        } else {
+            console.log(data.authToken);
+            pinboard.init(data.authToken);
+
+             /* Check if this tab's URL has been bookmarked already.
+               We check the local cache first, and if that's empty fire off a request to the API.
+               The icon's are toggled as appropriate;
+            */
+            // TODO: If pinboard is edited outside of Chrome, it'll be out of sync? Maybe don't bother with the cache?
+            // Or give it an expiry time?
+            if (savedPosts.hasOwnProperty(tab.url)){
                 chrome.pageAction.setIcon({ tabId : tab.id, path : "icon_active.png"});
-                savedPosts[tab.url] = true;
             } else {
-                chrome.pageAction.setIcon({ tabId : tab.id, path : "icon_deactive.png"});
+                getPost(tab.url, function(data){
+                    if (data.posts.length > 0){
+                        chrome.pageAction.setIcon({ tabId : tab.id, path : "icon_active.png"});
+                        savedPosts[tab.url] = true;
+                    } else {
+                        chrome.pageAction.setIcon({ tabId : tab.id, path : "icon_deactive.png"});
+                    }
+                });
             }
-        });
-    }
+        }
+
+    });
 
     chrome.pageAction.show(tabId);
 }
@@ -49,7 +59,6 @@ function getPost(url, callback){
     var requestURL = API_URL + "/posts/get?format=json&auth_token=" + auth_token + "&url=" + encodeURIComponent(url);
 
     getJSON(requestURL, function(data){
-        console.log(data);
         callback(data);
     });
 }
@@ -59,7 +68,6 @@ function addPost(url, title, description, tags, callback){
     var requestURL = API_URL + "/posts/add?format=json&auth_token=" + auth_token + "&url=" + encodeURIComponent(url) + "&description=" + title;
 
     getJSON(requestURL, function(data){
-        console.log(data);
         callback(data);
     });
 }
@@ -68,7 +76,6 @@ function removePost(url, callback){
     var requestURL = API_URL + "/posts/delete?format=json&auth_token=" + auth_token + "&url=" + encodeURIComponent(url);
 
     getJSON(requestURL, function(data){
-        console.log(data);
         callback(data);
     });
 }

@@ -40,8 +40,6 @@ pinboard = {
             + "&auth_token=" + this.authToken
             + "&format=json";
 
-        console.log(requestURL);
-
         getJSON(requestURL, function(data){
             callback(data);
         })
