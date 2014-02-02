@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Getting Started Extension's Popup</title>
+    <style>
+      body {
+        min-width: 357px;
+        overflow-x: hidden;
+        font: 12px Arial, sans-serif;
+      }
+
+      label {text-align: right; width: 7em; padding: 2px 5px 2px 0; display: block; float: left;}
+
+      input[type=text] {width: 20em;}
+
+    </style>
+
+    <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
+     -->
+    <form id="editPost">
+      <p><label for="title">Title</label><input type="text" name="title"/></p>
+      <p><label for="tags">Tags</label><input type="text" name="tags"/></p>
+      <ul id="tagComplete"></ul>
+      <label for"description">Description</label>
+      <textarea name="description"></textarea>
+      <p>
+        <button type="button" id="removePost">Remove</button>
+        <input type="submit" value="Done"/>
+      </p>
+    </form>
+
+    <form id="login">
+      <p><label for="username">User name</label><input type="text" name="username"/></p>
+      <p><label for="password">Password</label><input type="text" name="password"/></p>
+      <p><label for="authtoken">Auth Token</label><input type="text" name="authtoken"/></p>
+      <p><input type="submit" value="Login"/></p>
+    </form>
+
+    <script src="pinboard.js"></script>
+    <script src="popup.js"></script>
+  </head>
+  <body>
+  </body>
+</html>
+

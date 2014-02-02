@@ -1,0 +1,20 @@
+{
+    "manifest_version": 2,
+
+    "name": "Pinboard.in",
+    "description": "Add web pages to your Pinboard with a single click",
+    "version": "1.0",
+    "background": {
+        "scripts" : ["pinboard.js", "background.js"]
+    },
+    "permissions": [
+        "https://api.pinboard.in/",
+        "storage",
+        "tabs"
+    ],
+    "page_action": {
+        "default_title" : "Save to Pinboard.in",
+        //"default_icon" : "icon_deactive.png"
+        "default_popup" : "popup.html"
+    }
+}
