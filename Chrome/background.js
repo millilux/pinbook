@@ -27,7 +27,6 @@ function init(tabId, changeInfo, tab){
         if (! data.hasOwnProperty("authToken")){
 
         } else {
-            console.log(data.authToken);
             pinboard.init(data.authToken);
 
              /* Check if this tab's URL has been bookmarked already.

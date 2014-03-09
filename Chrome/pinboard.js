@@ -1,6 +1,5 @@
 var API_URL = "https://api.pinboard.in/v1"
 
-
 function getJSON(url, callback){
     /* Basic version of jQuery's $.getJSON method */
 
@@ -16,6 +15,7 @@ function getJSON(url, callback){
 }
 
 function param(obj) {
+    /* Basic version of jQuery's $.param method */
     var parts = [];
     for (var i in obj) {
         if (obj.hasOwnProperty(i)) {

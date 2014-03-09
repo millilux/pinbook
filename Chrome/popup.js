@@ -14,13 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
         loginFormEl    = document.getElementById('login'),
         removeButtonEl = document.getElementById('removePost'),
         titleEl        = formEl.querySelector('input[name=title]'),
-        descriptionEl  = formEl.querySelector('[name=description]'),
-        tagsEl         = formEl.querySelector('[name=tags]');
+        descriptionEl  = formEl.querySelector('textarea[name=description]'),
+        tagsEl         = formEl.querySelector('input[name=tags]');
 
     chrome.storage.local.get("authToken", function(data){
         if (! data.hasOwnProperty("authToken")){
             formEl.style.display = "none";
         } else {
+
             loginFormEl.style.display = "none";
             pinboard.init(data.authToken);
   
@@ -31,11 +32,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Then check to see if this URL has already been saved
                 pinboard.getPost({ url : currentTab.url }, function(data){
+                    console.log(data);
                     if (data.posts.length > 0){
+                        post = data.posts[0];
                         // URL is already in Pinboard, so update the form fields
-                        titleEl.value = data.posts[0].description;
+                        titleEl.value = post.description;
                         titleEl.select();
-                        descriptionEl.value = data.posts[0].extended;
+                        descriptionEl.value = post.extended;
+                        tagsEl.value = post.tags;
                     } else {
                         // URL isn't in Pinboard, so add it
                         pinboard.addPost({ url : currentTab.url, description : currentTab.title }, function(data){
@@ -76,72 +80,72 @@ document.addEventListener('DOMContentLoaded', function() {
     formEl.addEventListener("submit", submitEditHandler);
     loginFormEl.addEventListener("submit", submitLoginHandler);
 
-});
 
-function tagKeyUpHandler(e){
-    var input = e.target.value, 
-        tagCompleteEl = document.getElementById("tagComplete"),
-        tagCompleteListItems = [];
+    function tagKeyUpHandler(e){
+        var input = e.target.value, 
+            tagCompleteEl = document.getElementById("tagComplete"),
+            tagCompleteListItems = [];
 
-    for (var tag in savedTags){
-        if (tag.toLowerCase().match(input.toLowerCase())){
-            tagCompleteListItems.push("<li>" + tag + "</li>");
+        for (var tag in savedTags){
+            if (tag.toLowerCase().match(input.toLowerCase())){
+                tagCompleteListItems.push("<li>" + tag + "</li>");
+            }
         }
+        tagCompleteEl.innerHTML = tagCompleteListItems.join(" ");   
     }
-    tagCompleteEl.innerHTML = tagCompleteListItems.join(" ");   
-}
 
-function submitEditHandler(e){
-    e.preventDefault();
+    function submitEditHandler(e){
+        e.preventDefault();
 
-    pinboard.addPost({
-        url : currentTab.url,
-        replace : "yes",
-        description : e.target.querySelector("[name=title]").value,
-        extended : e.target.querySelector("[name=description]").value
-    }, function(data){
-        postUpdated(data);
-    });
-}
+        pinboard.addPost({
+            url : currentTab.url,
+            replace : "yes",
+            description : titleEl.value,
+            extended : descriptionEl.value,
+            tags: tagsEl.value
+        }, function(data){
+            postUpdated(data);
+        });
+    }
 
-function submitLoginHandler(e){
+    function submitLoginHandler(e){
 
-    e.preventDefault();
+        e.preventDefault();
 
-    var authToken = e.target.querySelector("[name=authtoken").value;
+        var authToken = e.target.querySelector("[name=authtoken").value;
 
-    chrome.storage.local.set({
-        //"userName" : e.target.username.value,
-        //"apiToken" : e.target.apitoken.value
-        "authToken" : authToken
-    }, function(){
-        document.getElementById('editPost').style.display = "block"; 
-        document.getElementById('login').style.display = "none";
-        pinboard.init(authToken);
-        alert(authToken);
-        e.target.submit();
-    });
-}
+        chrome.storage.local.set({
+            //"userName" : e.target.username.value,
+            //"apiToken" : e.target.apitoken.value
+            "authToken" : authToken
+        }, function(){
+            document.getElementById('editPost').style.display = "block"; 
+            document.getElementById('login').style.display = "none";
+            pinboard.init(authToken);
+            alert(authToken);
+            e.target.submit();
+        });
+    }
 
-function postAdded(data){
-    //savedPosts[tab.url] = true;
-    chrome.pageAction.setIcon({ tabId : currentTab.id, path : "icon_active.png"});
-}
+    function postAdded(data){
+        //savedPosts[tab.url] = true;
+        chrome.pageAction.setIcon({ tabId : currentTab.id, path : "icon_active.png"});
+    }
 
-function postUpdated(data){
-    window.close();
-}
-
-function postRemoved(data){
-    chrome.pageAction.setIcon({ tabId : currentTab.id, path : "icon_deactive.png"}, function(){
+    function postUpdated(data){
         window.close();
-    });
-}
+    }
 
-function getCurrentTab(callback){
-    chrome.tabs.query({ active : true }, function(tabs){
-        callback(tabs[0]);
-    });
-}
+    function postRemoved(data){
+        chrome.pageAction.setIcon({ tabId : currentTab.id, path : "icon_deactive.png"}, function(){
+            window.close();
+        });
+    }
 
+    function getCurrentTab(callback){
+        chrome.tabs.query({ active : true }, function(tabs){
+            callback(tabs[0]);
+        });
+    }
 
+});
