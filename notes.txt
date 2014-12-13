@@ -1,3 +1,6 @@
-- Tags
-  Find as you type to suggest?
-  Drop down of existing? 
+- Tag typing should suggest based on the current word where the cursor is
+- private tick box
+- settings section? to change user name and set private as default or not? 
+  maybe private has a setting on pinboard to get at?
+
+- https://github.com/TimSchlechter/bootstrap-tagsinput/blob/master/src/bootstrap-tagsinput.js
