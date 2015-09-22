@@ -14,7 +14,7 @@
     ],
     "page_action": {
         "default_title" : "Save to Pinboard.in",
-        //"default_icon" : "icon_deactive.png"
+        "default_icon" : "images/icon_deactive.png",
         "default_popup" : "popup.html"
     },
     "options_page": "options.html"

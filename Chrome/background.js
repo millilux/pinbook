@@ -12,7 +12,6 @@ function init(tabId, changeInfo, tab) {
 
     if (!data) {
       console.log("No pinboard credentials");
-      // TODO: set icon to grey
       return;
     }
 
@@ -22,14 +21,22 @@ function init(tabId, changeInfo, tab) {
     }
 
     pinboard.init(data.username, data.apitoken);
-    setIcon(tab);
+    checkPinned(tab);
   });
 
   chrome.pageAction.show(tabId);
 }
 
-/* Update the a tab's icon based on whether it's saved in Pinboard or not */
-function setIcon(tab) {
+function showActiveIcon(tabId){
+  chrome.pageAction.setIcon({ tabId : tabId, path : "images/icon_active.png"});
+}
+
+function showDeactiveIcon(tabId){
+  chrome.pageAction.setIcon({ tabId : tab.id, path : "images/icon_deactive.png"});
+}
+
+/* Check whether this tab is saved in Pinboard or not */
+function checkPinned(tab) {
 
   // Check the local cache
   if (savedPosts.hasOwnProperty(tab.url)) {
@@ -37,13 +44,11 @@ function setIcon(tab) {
     //return;
   } 
 
-  // Query the API
+  // Query the Pinboard API
   pinboard.getPost({ url : tab.url }, function (data) {
     if (data.posts.length > 0) {
-      chrome.pageAction.setIcon({ tabId : tab.id, path : "images/icon_active.png"});
+      showActiveIcon(tab.id);
       savedPosts[tab.url] = true;
-    } else {
-      chrome.pageAction.setIcon({ tabId : tab.id, path : "images/icon_deactive.png"});
     }
   });
 }
