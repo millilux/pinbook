@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pinboard Options</title>
+    <style type="text/css">
+        body {background: #ccc;}
+        #options {background: #fff; padding: 20px; width: 350px; margin: 0 auto;}
+        ul {list-style-type: none;}
+        li {padding: 5px;}
+        input[type=text] {margin: 5px 10px; padding: 5px; min-width: 16em;}
+    </style>
+</head>
+<body>
+
+<div id="options">
+    <ul>
+        <li>
+            <label>
+                Username
+                <input type="text" id="username"/>
+            </label>
+        </li>
+        <li>
+            <label>
+                API Token
+                <input type="text" id="apitoken"/>
+            </label>
+        </li>
+        <li>
+            <label>
+                Default to private
+                <input type="checkbox" id="private"/>
+            </label>
+        </li>
+    </ul>
+
+    <div id="status"></div>
+    <button id="save">Save</button>
+</div>
+
+<!--
+Favorite color:
+<select id="color">
+ <option value="red">red</option>
+ <option value="green">green</option>
+ <option value="blue">blue</option>
+ <option value="yellow">yellow</option>
+</select>
+
+<label>
+  <input type="checkbox" id="like">
+  I like colors.
+</label>
+-->
+
+
+
+<script src="options.js"></script>
+</body>
+</html>

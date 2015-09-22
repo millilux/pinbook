@@ -1,172 +1,186 @@
-//pinboard.init("biscuitseverywhere:041ab87679e544eaa14d");
+//var PINMARK = PINMARK || {};
 
-var savedPosts = {};
-var savedTags = {};
-var currentTab;
 var pinboard = pinboard;
-var formEl,
-  loginFormEl,
-  removeButtonEl,
-  titleEl,
-  descriptionEl,
-  tagsEl,
-  dateEl;
 
-/*
-    As soon as the popup loads, we want to add the URL to pinboard
-*/
-document.addEventListener('DOMContentLoaded', function () {
+var PINMARK = {
+  savedPosts : {},
+  savedTags : {},
+  activeTab : null,
 
-  formEl         = document.getElementById('editPost');
-  loginFormEl    = document.getElementById('login');
-  removeButtonEl = document.getElementById('removePost');
-  titleEl        = formEl.querySelector('input[name=title]');
-  descriptionEl  = formEl.querySelector('textarea[name=description]');
-  tagsEl         = formEl.querySelector('input[name=tags]');
-  dateEl         = document.getElementById('date');
+  init : function () {
+    var self = this;
+    this.editFormEl     = document.getElementById('editPost');
+    this.loginFormEl    = document.getElementById('login');
+    this.removeButtonEl = document.getElementById('removePost');
+    this.titleEl        = document.querySelector('input[name=title]');
+    this.descriptionEl  = document.querySelector('textarea[name=description]');
+    this.tagsEl         = document.querySelector('input[name=tags]');
+    this.urlEl          = document.querySelector('input[name=url]');
+    this.dateEl         = document.getElementById('date');
 
-  chrome.storage.local.get(["username", "apitoken"], function (data) {
+    chrome.storage.local.get(['username', 'apitoken'], function (data) {
 
-    if (!data.hasOwnProperty("username")) {
-      // Missing user credentials, so show login form
-      formEl.style.display = "none";
-      return;
-    }
+      if (!data.hasOwnProperty('username')) {
+        // Missing user credentials, so show login form
+        self.showLoginForm();
+        return;
+      }
 
-    loginFormEl.style.display = "none";
-    pinboard.init(data.username, data.apitoken);
-
-    getCurrentTab(function (tab) {
-
-      currentTab = tab;
-      titleEl.value = currentTab.title;   // Set the title to make everything appear quick
-
-      //  Check to see if this URL has already been saved
-      pinboard.getPost({ url : currentTab.url }, function (data) {
-        console.log(data);
-        if (data.posts.length > 0) {
-          // URL is already saved in Pinboard, so let's allow the user to edit it
-          var post = data.posts[0];
-          titleEl.value = post.description;
-          titleEl.select();
-          descriptionEl.value = post.extended;
-          tagsEl.value = post.tags;
-
-          //var now = new Date();
-          //var date = new Date(data.date);
-
-          //dateEl.textContent = date;
-
-        } else {
-          // It's a new URL, so save it to Pinboard 
-          pinboard.addPost({ url : currentTab.url, description : currentTab.title }, function (data) {
-            if (data.result_code === "done") {
-              postAdded(data);
-              titleEl.value = currentTab.title;
-            } else {
-              alert("Error adding post to pinboard: " + data.result_code);
-            }
-          });
-        }
-      });
+      self.login(data.username, data.apitoken);
 
       pinboard.getTags({}, function (data) {
-        savedTags = data;
-        //for (var tag in savedTags){
-        //    if (savedTags.hasOwnProperty(tag)){
-        //        tagsEl.value += " " + tag;
-        //    }
-        //}
+        self.savedTags = data;
+        var tagSuggest = new TagSuggest(Object.keys(data), self.tagsEl);
+      });
+
+      self.showEditForm();
+
+      self.getActiveTab(function (tab) {
+        self.getOrCreate(tab.url, tab.title);
+      });
+
+    });
+
+    this.loginFormEl.addEventListener('submit', function (e) {
+      var username = e.target.username.value,
+        apitoken = e.target.apitoken.value;
+      //e.preventDefault();
+      self.login(username, apitoken);
+    });
+
+    this.editFormEl.addEventListener('submit', function (e) {
+
+      e.preventDefault();
+
+      pinboard.addPost({
+        url : self.activeTab.url,
+        replace : 'yes',
+        description : self.titleEl.value,
+        extended : self.descriptionEl.value,
+        tags: self.tagsEl.value
+      }, self.postUpdated);
+
+    });
+
+    this.removeButtonEl.addEventListener('click', function (e) {
+      pinboard.deletePost({ url : self.activeTab.url }, function (data) {
+        if (data.result_code === 'done') {
+          self.postDeleted(data);
+        } else {
+          alert('Error removing post from pinboard: ' + data.result_code);
+        }
       });
     });
-  });
 
-  removeButtonEl.addEventListener("click", function () {
-    pinboard.deletePost({ url : currentTab.url }, function (data) {
-      if (data.result_code === "done") {
-        postRemoved(data);
-      } else {
-        alert("Error removing post from pinboard: " + data.result_code);
-      }
-    });
-  });
+  },
 
-  tagsEl.addEventListener("keyup", tagKeyUpHandler);
-  formEl.addEventListener("submit", submitEditHandler);
-  loginFormEl.addEventListener("submit", submitLoginHandler);
+  login : function (username, apitoken) {
 
-});
-
-function tagKeyUpHandler(e) {
-
-  var input = e.target.value,
-    tagCompleteEl = document.getElementById("tagComplete"),
-    tagCompleteListItems = [],
-    currentWord,
-    tag;
-
-  for (tag in savedTags) {
-    if (savedTags.hasOwnProperty(tag)) {
-      if (tag.toLowerCase().match(input.toLowerCase())) {
-        tagCompleteListItems.push("<li>" + tag + "</li>");
-      }
-    }
-  }
-  tagCompleteEl.innerHTML = tagCompleteListItems.join(" ");
-}
-
-// User is editing an existing post
-function submitEditHandler(e) {
-  e.preventDefault();
-
-  pinboard.addPost({
-    url : currentTab.url,
-    replace : "yes",
-    description : titleEl.value,
-    extended : descriptionEl.value,
-    tags: tagsEl.value
-  }, postUpdated);
-}
-
-function submitLoginHandler(e) {
-
-  e.preventDefault();
-
-  var username = e.target.username.value,
-    apitoken = e.target.apitoken.value;
-
-  chrome.storage.local.set({
-    "username" : username,
-    "apitoken" : apitoken
-  }, function () {
-    // Hide the login form and show the edit post form
-    document.getElementById('login').style.display = "none";
-    document.getElementById('editPost').style.display = "block";
-
-    // We can now set the credentials
+    // Set pinboard credentials so we can make API calls
     pinboard.init(username, apitoken);
 
-    e.target.submit();
-  });
-}
+    // Save credentials for future calls
+    chrome.storage.local.set({
+      'username' : username,
+      'apitoken' : apitoken
+    });
 
-function postAdded(data) {
-  //savedPosts[tab.url] = true;
-  chrome.pageAction.setIcon({ tabId : currentTab.id, path : "icon_active.png"});
-}
+  },
 
-function postUpdated(data) {
-  window.close();
-}
+  showLoginForm : function () {
+    this.loginFormEl.style.display = 'block';
+    this.editFormEl.style.display = 'none';
+  },
 
-function postRemoved(data) {
-  chrome.pageAction.setIcon({ tabId : currentTab.id, path : "icon_deactive.png"}, function () {
+  showEditForm : function () {
+    this.loginFormEl.style.display = 'none';
+    this.editFormEl.style.display = 'block';
+    document.getElementById('currentUser').style.display = 'block';
+    document.getElementById('currentUser').textContent = pinboard.username;
+  },
+
+  postAdded : function (data) {
+    //savedPosts[tab.url] = true;
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'});
+    this.titleEl.value = this.activeTab.title;
+    document.getElementById("heading").textContent = "Added to Pinboard!";
+  },
+
+  postUpdated : function (data) {
     window.close();
-  });
-}
+  },
 
-function getCurrentTab(callback) {
-  chrome.tabs.query({ active : true }, function (tabs) {
-    callback(tabs[0]);
-  });
-}
+  postDeleted : function (data) {
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, function(e){
+      window.close();
+    });
+  },
+
+  getActiveTab : function (callback) {
+    var self = this;
+    chrome.tabs.query({ active : true }, function (tabs) {
+      self.activeTab = tabs[0];
+      callback(tabs[0]);
+    });
+  },
+
+  showPost : function(url, title, description, tags, isNew){
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'});
+    //this.titleEl.value = this.activeTab.title;
+    this.titleEl.value = title;
+    this.descriptionEl.value = description;
+    this.tagsEl.value = tags;
+    if (isNew){
+      document.getElementById("heading").textContent = "Added to Pinboard!"; 
+    }
+    this.titleEl.select();
+  },
+
+  // Create a new post if the URL doesn't already exist in Pinboard. Otherwise, allows editing
+  getOrCreate : function (url, title) {
+
+    var self = this;
+
+    // Set the title to make everything appear quick
+    this.titleEl.value = title;
+    this.urlEl.value = url;
+
+    pinboard.getPost({ url : url }, function (data) {
+      console.log(data);
+
+      if (data.posts.length === 0) {
+
+        self.showPost(url, title, null, null, true);
+
+        // It's a new URL, so save it to Pinboard 
+        pinboard.addPost({ url : url, description : title }, function (data) {
+          if (data.result_code === 'done') {
+            
+          } else {
+            alert('Error adding post to pinboard: ' + data.result_code);
+            // TODO: deactivate pinicon and title
+          }
+        });
+
+      } else {
+
+        // URL is already saved in Pinboard, so display the fetched data
+        var post = data.posts[0];
+        self.showPost(url, post.description, post.extended, post.tags, false);
+        //var now = new Date();
+        //var date = new Date(data.date);
+        //dateEl.textContent = date;
+
+      }
+    });
+
+  }
+
+};
+
+
+(function (pinboard, window, document) {
+
+  document.addEventListener('DOMContentLoaded', PINMARK.init());
+
+}(pinboard, window, document));

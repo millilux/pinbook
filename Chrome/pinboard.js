@@ -27,16 +27,17 @@ function param(obj) {
 
 pinboard = {
 
-  API_URL : "https://api.pinboard.in/v1",
+  endpoint : "https://api.pinboard.in/v1",
 
   /* Setup user credentials */
-  init : function (username, apiToken) {
-    this.authToken = username + ":" + apiToken;
+  init : function (username, apitoken) {
+    this.username = username;
+    this.authToken = username + ":" + apitoken;
   },
 
   /* Handles all HTTP requests */
   request : function (resourceURI, params, callback) {
-    var requestURL = this.API_URL
+    var requestURL = this.endpoint
       + resourceURI
       + "?" + param(params)
       + "&auth_token=" + this.authToken

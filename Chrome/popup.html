@@ -4,14 +4,24 @@
     <title>Getting Started Extension's Popup</title>
     <style>
       body {
+        margin: 15px 20px;
         min-width: 357px;
         overflow-x: hidden;
-        font: 12px Arial, sans-serif;
+        font: 12px Helvetica, sans-serif;*/
       }
 
+      h3 {margin-bottom: 0;}
+      #currentUser {display: none; margin-top: 3px; color: #aaa; font-size: 90%;}
       label {text-align: right; width: 7em; padding: 2px 5px 2px 0; display: block; float: left;}
 
       input[type=text] {width: 20em;}
+      textarea {width: 20em; height: 4.6em; border-color: #ccc;}
+      button[type=submit] {}
+
+      #tagSuggestContainer {position: relative;}
+      #tagSuggestions {position: absolute; left: 0; top: 0; padding: 10px; background-color: #fff; border: 1px solid #888; list-style-type: none; display: none;}
+      #tagSuggestions li {margin: 5px; padding: 3px 5px;}
+      #tagSuggestions li.selected {background-color: #ccc;}
 
     </style>
 
@@ -21,30 +31,41 @@
       -
       - [1]: http://developer.chrome.com/extensions/contentSecurityPolicy.html
      -->
+
+  </head>
+  <body>
+    <h3 id="heading">Pinboard</h3>
+    <p id="currentUser"></p>
+
     <form id="editPost">
-      <p><label for="title">Title</label><input type="text" name="title"/></p>
-      <p><label for="tags">Tags</label><input type="text" name="tags"/></p>
-      <ul id="tagComplete"></ul>
-      <label for="description">Description</label>
-      <textarea name="description"></textarea>
+      <p><label for="title">Title:</label><input type="text" name="title" id="title"/></p>
+      <div id="tagSuggestContainer">
+        <p>
+          <label for="tags">Tags:</label><input type="text" name="tags" id="tags" autocomplete="off"/>
+        </p>
+        <ul id="tagSuggestions"></ul>
+      </div>
+      <label for="description">Description:</label>
+      <textarea name="description" id="description"></textarea>
+      <input type="hidden" name="url"/>
       <!--<p>Added <span id="date">Just now</span></p>-->
       <p>
-        <button type="button" id="removePost">Remove</button>
-        <input type="submit" value="Done"/>
+        <button type="button" id="removePost">Delete</button>
+        <button type="submit">Done</button>
       </p>
     </form>
 
     <form id="login">
-      <p><label for="username">User name</label><input type="text" name="username"/></p>
-      <p><label for="password">Password</label><input type="text" name="password"/></p>
-      <p><label for="apitoken">Auth Token</label><input type="text" name="apitoken"/></p>
+      <p><label for="username">User name</label><input type="text" name="username" id="username"/></p>
+      <p><label for="apitoken">Auth Token</label><input type="text" name="apitoken" id="apitoken"/></p>
       <p><input type="submit" value="Login"/></p>
     </form>
 
-    <script src="pinboard.js"></script>
-    <script src="popup.js"></script>
-  </head>
-  <body>
+    <script type="text/javascript" src="jquery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="pinboard.js"></script>
+    <script type="text/javascript" src="tagsuggest.js"></script>
+    <script type="text/javascript" src="popup.js"></script>
+
   </body>
 </html>
 
