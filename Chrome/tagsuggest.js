@@ -8,10 +8,19 @@ var TagSuggest = function (tags, inputElement) {
   this.hide();
 
   this.inputEl.addEventListener('keydown', function (e) {
+    
     if (e.keyIdentifier === "U+0009" && self.isOpen) {
+      // Use current suggestion when Tab is pressed
       e.preventDefault();
-      self.addCurrentSuggestion();
+      self.useCurrentSuggestion();
+    } else if (e.keyIdentifier === "Up" && self.isOpen) {
+      // Prevent "Home" behaviour when tag suggest is open
+      e.preventDefault();
+    } else if (e.keyIdentifier === "Down" && self.isOpen) {
+      // Prevent "End" behaviour when tag suggest is open
+      e.preventDefault();
     }
+
   });
 
   this.inputEl.addEventListener('keyup', function (e) {
@@ -71,7 +80,7 @@ TagSuggest.prototype = {
     selectedEl.className = 'selected';
   },
 
-  addCurrentSuggestion : function () {
+  useCurrentSuggestion : function () {
     // Replace the partly entered user string with the currently selected tag
     var enteredTags = this.inputEl.value.split(/\s+/);
     enteredTags[enteredTags.length - 1] = this.listEl.querySelectorAll('li')[this.cursor].textContent;

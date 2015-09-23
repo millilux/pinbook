@@ -1,12 +1,9 @@
-var pinboard = pinboard;
-window.savedPosts = {}; // cache any URLs we know to be saved
+//window.savedPosts = {}; // cache any URLs we know to be saved
 
 // Add a listener so background knows when a tab has changed.
-// You need "tabs" permission, that"s why we added it to manifest file.
-chrome.tabs.onUpdated.addListener(init);
-//chrome.pageAction.onClicked.addListener(clickHandler);
+chrome.tabs.onUpdated.addListener(tabUpdated);
 
-function init(tabId, changeInfo, tab) {
+function tabUpdated(tabId, changeInfo, tab) {
 
   chrome.storage.local.get(["username", "apitoken"], function (data) {
 
@@ -20,8 +17,15 @@ function init(tabId, changeInfo, tab) {
       return;
     }
 
-    pinboard.init(data.username, data.apitoken);
-    checkPinned(tab);
+    var pinboard = new Pinboard(data.username, data.apitoken);
+
+    // Update the icon if this tab's URL is saved at Pinboard
+    pinboard.posts.get({ url : tab.url }, function (data) {
+      if (data.posts.length > 0) {
+        showActiveIcon(tab.id);
+      }
+    });
+
   });
 
   chrome.pageAction.show(tabId);
@@ -39,16 +43,16 @@ function showDeactiveIcon(tabId){
 function checkPinned(tab) {
 
   // Check the local cache
-  if (savedPosts.hasOwnProperty(tab.url)) {
+  //if (savedPosts.hasOwnProperty(tab.url)) {
     //chrome.pageAction.setIcon({ tabId : tab.id, path : "images/icon_active.png"});
     //return;
-  } 
+  //} 
 
   // Query the Pinboard API
-  pinboard.getPost({ url : tab.url }, function (data) {
+  pinboard.posts.get({ url : tab.url }, function (data) {
     if (data.posts.length > 0) {
       showActiveIcon(tab.id);
-      savedPosts[tab.url] = true;
+      //savedPosts[tab.url] = true;
     }
   });
 }

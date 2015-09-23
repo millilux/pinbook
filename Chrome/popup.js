@@ -1,11 +1,10 @@
 //var PINMARK = PINMARK || {};
 
-var pinboard = pinboard;
-
 var PINMARK = {
   savedPosts : {},
   savedTags : {},
   activeTab : null,
+  pinboard: null,
 
   init : function () {
     var self = this;
@@ -26,17 +25,15 @@ var PINMARK = {
         return;
       }
 
-      self.login(data.username, data.apitoken);
-
-      pinboard.getTags({}, function (data) {
-        self.savedTags = data;
-        var tagSuggest = new TagSuggest(Object.keys(data), self.tagsEl);
-      });
-
+      self.pinboard = new Pinboard(data.username, data.apitoken);
       self.showEditForm();
-
       self.getActiveTab(function (tab) {
         self.getOrCreate(tab.url, tab.title);
+      });
+
+      self.pinboard.getTags({}, function (data) {
+        self.savedTags = data;
+        var tagSuggest = new TagSuggest(Object.keys(data), self.tagsEl);
       });
 
     });
@@ -45,14 +42,21 @@ var PINMARK = {
       var username = e.target.username.value,
         apitoken = e.target.apitoken.value;
       //e.preventDefault();
-      self.login(username, apitoken);
+      self.pinboard = new Pinboard(username, apitoken);
+
+      // Save pinboard credentials so we can make future API calls
+      chrome.storage.local.set({
+        'username' : username,
+        'apitoken' : apitoken
+      });
+
     });
 
     this.editFormEl.addEventListener('submit', function (e) {
 
       e.preventDefault();
 
-      pinboard.addPost({
+      self.pinboard.addPost({
         url : self.activeTab.url,
         replace : 'yes',
         description : self.titleEl.value,
@@ -63,26 +67,13 @@ var PINMARK = {
     });
 
     this.removeButtonEl.addEventListener('click', function (e) {
-      pinboard.deletePost({ url : self.activeTab.url }, function (data) {
+      self.pinboard.deletePost({ url : self.activeTab.url }, function (data) {
         if (data.result_code === 'done') {
           self.postDeleted(data);
         } else {
           alert('Error removing post from pinboard: ' + data.result_code);
         }
       });
-    });
-
-  },
-
-  login : function (username, apitoken) {
-
-    // Set pinboard credentials so we can make API calls
-    pinboard.init(username, apitoken);
-
-    // Save credentials for future calls
-    chrome.storage.local.set({
-      'username' : username,
-      'apitoken' : apitoken
     });
 
   },
@@ -96,7 +87,7 @@ var PINMARK = {
     this.loginFormEl.style.display = 'none';
     this.editFormEl.style.display = 'block';
     document.getElementById('currentUser').style.display = 'block';
-    document.getElementById('currentUser').textContent = pinboard.username;
+    document.getElementById('currentUser').textContent = this.pinboard.username;
   },
 
   postAdded : function (data) {
@@ -145,7 +136,7 @@ var PINMARK = {
     this.titleEl.value = title;
     this.urlEl.value = url;
 
-    pinboard.getPost({ url : url }, function (data) {
+    this.pinboard.getPost({ url : url }, function (data) {
       console.log(data);
 
       if (data.posts.length === 0) {
@@ -153,7 +144,7 @@ var PINMARK = {
         self.showPost(url, title, null, null, true);
 
         // It's a new URL, so save it to Pinboard 
-        pinboard.addPost({ url : url, description : title }, function (data) {
+        self.pinboard.addPost({ url : url, description : title }, function (data) {
           if (data.result_code === 'done') {
             
           } else {
@@ -179,8 +170,8 @@ var PINMARK = {
 };
 
 
-(function (pinboard, window, document) {
+(function (Pinboard, window, document) {
 
   document.addEventListener('DOMContentLoaded', PINMARK.init());
 
-}(pinboard, window, document));
+}(Pinboard, window, document));
