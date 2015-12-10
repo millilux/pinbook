@@ -1,7 +1,13 @@
 //'use strict';
 chrome.tabs.onUpdated.addListener(onTabUpdated);
 
+window.savedPosts = {};
+
 function onTabUpdated(tabId, changeInfo, tab) {
+
+  if (!tab.url.match(/^http/)){
+    return;
+  }
 
   chrome.storage.local.get(["username", "apitoken"], function (data) {
 
@@ -15,11 +21,16 @@ function onTabUpdated(tabId, changeInfo, tab) {
       return;
     }
 
-    // Update the icon if this tab's URL is saved at Pinboard
+    // Check if the tab URL is saved in user's Pinboard
     Pinboard.config(data.username, data.apitoken);
     Pinboard.posts.get({ url : tab.url }).then(function (data) {
       if (data.posts.length > 0) {
+        // URL is in user's Pinboard
         showActiveIcon(tab.id);
+        window.savedPosts[tab.id] = data.posts[0];    // Cache the post info incase the user clicks the popup
+      } else {
+        // URL is not in user's pinboard
+        delete window.savedPosts[tab.id];             // Clear any cache entry for this post
       }
     });
 

@@ -25,11 +25,10 @@
     }, function(items) {
       document.getElementById('username').value = items.username;
       document.getElementById('apitoken').value = items.apitoken;
-      //document.getElementById('like').checked = items.likesColor;
     });
   }
 
-document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click', save_options);
+  document.addEventListener('DOMContentLoaded', restore_options);
+  document.getElementById('save').addEventListener('click', save_options);
 
-}(Pinmark = Pinmark || {}));
+}(window.Pinmark = window.Pinmark || {}));

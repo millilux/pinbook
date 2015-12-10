@@ -4,6 +4,7 @@
 
 /* Pinboard API client */
 var Pinboard = (function() {
+  'use strict';
 
   var API_BASE = 'https://api.pinboard.in/v1', 
       username,
@@ -14,6 +15,8 @@ var Pinboard = (function() {
     apitoken = _apitoken;
   };
 
+  var re = /^https?:\/\//;
+
   // Handles requests to Pinboard API  
   var request = function (uri, params) {
     var url = API_BASE + uri;
@@ -23,6 +26,10 @@ var Pinboard = (function() {
     }
 
     return new Promise( function (resolve, reject) {
+      if (params && params.hasOwnProperty('url') && !params.url.match(re)){
+        reject(new Error("Invalid URL"));
+      }
+
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
 
@@ -31,12 +38,12 @@ var Pinboard = (function() {
           var data = JSON.parse(xhr.response);
           resolve(data);
         } else {
-          reject(Error(xhr.statusText));
+          reject(new Error(xhr.statusText));
         }
       };
 
       xhr.onerror = function () {
-        reject(Error('Connection error'));
+        reject(new Error('Connection error'));
       };
 
       xhr.send();
@@ -127,6 +134,7 @@ Pinboard.prototype = {
   },
 
   posts : function (){
+    var self = this;
     return {
       "get" : self.method("/posts/get"),
       "add" : self.method("/posts/add"),

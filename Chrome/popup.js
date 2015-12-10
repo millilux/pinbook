@@ -1,8 +1,7 @@
-(function (pinmark) {
+(function (pinmark, background) {
   'use strict';
 
   pinmark.popup = {
-    savedPosts : {},
     savedTags : {},
     activeTab : null,
     username: null,
@@ -15,14 +14,14 @@
     init : function () {
       var self = this;
 
-      this.editFormEl     = document.getElementById('editPost');
-      this.loginFormEl    = document.getElementById('login');
-      this.removeButtonEl = document.getElementById('removePost');
-      this.titleEl        = document.querySelector('input[name=title]');
-      this.descriptionEl  = document.querySelector('textarea[name=description]');
-      this.tagsEl         = document.querySelector('input[name=tags]');
-      this.urlEl          = document.querySelector('input[name=url]');
-      this.dateEl         = document.getElementById('date');
+      self.editFormEl     = document.getElementById('editPost');
+      self.loginFormEl    = document.getElementById('login');
+      self.deleteButtonEl = document.getElementById('removePost');
+      self.titleEl        = document.querySelector('input[name=title]');
+      self.descriptionEl  = document.querySelector('textarea[name=description]');
+      self.tagsEl         = document.querySelector('input[name=tags]');
+      self.urlEl          = document.querySelector('input[name=url]');
+      self.dateEl         = document.getElementById('date');
 
       chrome.storage.local.get(['username', 'apitoken'], function (data) {
 
@@ -36,7 +35,7 @@
         self.showEditForm();
 
         self.getActiveTab(function (tab) {
-          self.getOrCreate(tab.url, tab.title);
+          self.getOrCreatePost(tab);
         });
 
         Pinboard.tags.get().then(function (data) {
@@ -46,7 +45,7 @@
 
       });
 
-      this.setupEvents();
+      self.setupEvents();
 
     },
 
@@ -55,7 +54,7 @@
       var self = this;
 
       // Login form
-      this.loginFormEl.addEventListener('submit', function (e) {
+      self.loginFormEl.addEventListener('submit', function (e) {
         var username = e.target.username.value,
           apitoken = e.target.apitoken.value;
         //e.preventDefault();
@@ -69,30 +68,15 @@
 
       });
 
-      // URL edit form
-      this.editFormEl.addEventListener('submit', function (e) {
-
+      // Edit form
+      self.editFormEl.addEventListener('submit', function (e) {
         e.preventDefault();
-
-        Pinboard.posts.add({
-          url : self.activeTab.url,
-          replace : 'yes',
-          description : self.titleEl.value,
-          extended : self.descriptionEl.value,
-          tags: self.tagsEl.value
-        }).then(self.postUpdated);
-
+        self.updatePost();
       });
 
       // Delete button
-      this.removeButtonEl.addEventListener('click', function (e) {
-        Pinboard.posts.delete({ url : self.activeTab.url }).then(function (data) {
-          if (data.result_code === 'done') {
-            self.postDeleted(data);
-          } else {
-            alert('Error removing post from pinboard: ' + data.result_code);
-          }
-        });
+      self.deleteButtonEl.addEventListener('click', function (e) {
+        self.deletePost();
       });
 
     },
@@ -110,8 +94,7 @@
     },
 
     showPost : function(url, title, description, tags, isNew){
-      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'});
-      //this.titleEl.value = this.activeTab.title;
+      this.activateIcon();
       this.titleEl.value = title;
       this.descriptionEl.value = description;
       this.tagsEl.value = tags;
@@ -121,21 +104,12 @@
       this.titleEl.select();
     },
 
-    postAdded : function (data) {
-      //savedPosts[tab.url] = true;
+    activateIcon : function(){
       chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'});
-      this.titleEl.value = this.activeTab.title;
-      document.getElementById("heading").textContent = "Added to Pinboard!";
     },
 
-    postUpdated : function (data) {
-      window.close();
-    },
-
-    postDeleted : function (data) {
-      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, function(e){
-        window.close();
-      });
+    deactivateIcon : function(){
+      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'});
     },
 
     getActiveTab : function (callback) {
@@ -146,44 +120,69 @@
       });
     },
 
-    // Create a new post if the URL doesn't already exist in Pinboard. Otherwise, allows editing
-    getOrCreate : function (url, title) {
+    getOrCreatePost : function(tab){
       var self = this;
+      var url = tab.url;
+      var title = tab.title;
+      if (tab.id in background.savedPosts === false){
+        // New post
+        self.activateIcon();
+        self.showPost(url, title, null, null, true);
+        Pinboard.posts.add({ url : url, description : title }).then(function (data) {
+          if (data.result_code === 'done') {
+            background.savedPosts[tab.id] = {
+              href : url,
+              description : title,
+              extended : "",
+              tags: ""
+            };
+          } else {
+            alert('Error adding post to pinboard: ' + data.result_code);
+            self.deactivateIcon();
+          }
+        });
+      } else {
+        // Existing post
+        var savedPost = background.savedPosts[tab.id];
+        self.showPost(savedPost.href, savedPost.description, savedPost.extended, savedPost.tags, false);
+      }
+    }, 
 
-      // Set the title to make everything appear quick
-      this.titleEl.value = title;
-      this.urlEl.value = url;
+    updatePost : function(){
+      var self = this;
+      Pinboard.posts.add({
+        url : self.activeTab.url,
+        replace : 'yes',
+        description : self.titleEl.value,
+        extended : self.descriptionEl.value,
+        tags: self.tagsEl.value
+      }).then(function(){
+        background.savedPosts[self.activeTab.id] = {
+          href : self.activeTab.url,
+          description : self.titleEl.value,
+          extended : self.descriptionEl.value,
+          tags: self.tagsEl.value
+        };
+        window.close();
+      });
+    }, 
 
-      Pinboard.posts.get({ url : url }).then(function (data) {
-        console.log(data);
-
-        if (data.posts.length === 0) {
-          // It's a new URL, so save it to Pinboard 
-
-          self.showPost(url, title, null, null, true);
-          Pinboard.posts.add({ url : url, description : title }).then(function (data) {
-            if (data.result_code === 'done') {
-              
-            } else {
-              alert('Error adding post to pinboard: ' + data.result_code);
-              // TODO: deactivate pinicon and title
-            }
+    deletePost : function(){
+      var self = this;
+      Pinboard.posts.delete({ url : self.activeTab.url }).then(function (data) {
+        if (data.result_code === 'done') {
+          delete background.savedPosts[self.activeTab.id];
+          chrome.pageAction.setIcon({ tabId : self.activeTab.id, path : 'images/icon_deactive.png'}, function(e){
+            window.close();
           });
-
         } else {
-          // URL is already saved in Pinboard, so display the fetched data
-          var post = data.posts[0];
-          self.showPost(url, post.description, post.extended, post.tags, false);
-          //var now = new Date();
-          //var date = new Date(data.date);
-          //dateEl.textContent = date;
+          alert('Error removing post from pinboard: ' + data.result_code);
         }
       });
-
     }
 
   };
 
   document.addEventListener('DOMContentLoaded', pinmark.popup.init());
 
-}(window.Pinmark = window.Pinmark || {}));
+}(window.Pinmark = window.Pinmark || {}, chrome.extension.getBackgroundPage()));
