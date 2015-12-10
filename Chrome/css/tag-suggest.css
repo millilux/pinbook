@@ -1,0 +1,4 @@
+.tagSuggest ul {position: absolute; left: 0; top: 0; padding: 10px; background-color: #fff; border: 1px solid #888; list-style-type: none;}
+.tagSuggest li {margin: 0; padding: 2px 7px;}
+.tagSuggest li:hover {cursor: pointer;}
+.tagSuggest li.selected {background-color: #ccc;}

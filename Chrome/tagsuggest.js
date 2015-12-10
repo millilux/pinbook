@@ -1,4 +1,4 @@
-var TagSuggest = function (tags, inputElement) {
+var TagSuggest = function (tags, inputElement, containerId) {
   var self = this;
 
   this.tags = tags;
@@ -6,6 +6,10 @@ var TagSuggest = function (tags, inputElement) {
   this.inputEl = inputElement;
   this.containerEl = document.createElement('div');
   this.containerEl.className = 'tagSuggest';
+  if (containerId){
+    this.containerEl.id = containerId;
+  }
+
   inputElement.parentNode.insertBefore(this.containerEl, this.inputEl);
   this.close();
 
@@ -102,6 +106,7 @@ TagSuggest.prototype = {
   },
 
   highlight : function (index) {
+
     // Clear the currently selected element
     var selectedEl = this.containerEl.querySelector('.selected');
     if (selectedEl) {
@@ -151,21 +156,11 @@ TagSuggest.prototype = {
           + this.suggestions[i]
           + '</li>'
         );
-
-        /*
-        if (i == this.cursor){
-          lines.push('<li class="selected">' + data.suggestions[i] + '</li>');
-        } else {
-          lines.push('<li>' + data.suggestions[i] + '</li>');
-        }
-        */
       }
       this.containerEl.innerHTML = "<ul>" + lines.join('') + "</ul>";
     } else {
       this.close();
     }
   },
-
-
 
 };
