@@ -3,20 +3,21 @@
   <head>
     <title>Getting Started Extension's Popup</title>
     <style>
-      body {
-        margin: 15px 20px;
-        min-width: 357px;
-        overflow-x: hidden;
-        font: 12px Helvetica, sans-serif;*/
-      }
-
-      h3 {margin-bottom: 0;}
-      #currentUser {display: none; margin-top: 3px; color: #aaa; font-size: 90%;}
-      label {text-align: right; width: 7em; padding: 2px 5px 2px 0; display: block; float: left;}
-
-      input[type=text] {width: 20em;}
-      textarea {width: 20em; height: 4.6em; border-color: #ccc;}
+      body {font: 11px Helvetica, sans-serif; margin: 15px 20px; min-width: 357px; overflow-x: hidden;}
+      h3 {margin-bottom: 0; font-size: 120%;}
+      #currentUser {display: none; margin-top: 3px; color: #aaa;}
+      label {text-align: right; width: 7em; padding: 2px 6px 3px 0; display: block; float: left;}
+      input[type=text] {width: 20em; padding: 1px 2px;}
+      textarea {width: 20em; height: 4.6em; border-color: #ccc; padding: 4px;}
       button[type=submit] {}
+      .tagSuggest {font-size: 11px;}
+      .error {color: red; font-weight: bold;}
+
+      /* Alternative style */
+      body {min-width: 25em;}
+      label {display: none;}
+      input[type=text], textarea {width: 25em;}
+
     </style>
 
     <link rel="stylesheet" type="text/css" href="css/tag-suggest.css">
@@ -32,16 +33,17 @@
   <body>
     <h3 id="heading">Pinboard</h3>
     <p id="currentUser"></p>
+    <p class="error"></p>
 
     <form id="editPost">
-      <p><label for="title">Title:</label><input type="text" name="title" id="title"/></p>
-      <p><label for="tags">Tags:</label><input type="text" name="tags" id="tags" autocomplete="off"/></p>
-      <label for="description">Description:</label>
-      <textarea name="description" id="description"></textarea>
+      <p><label for="title">Title</label><input type="text" name="title" id="title" placeholder="Title"/></p>
+      <p><label for="tags">Tags</label><input type="text" name="tags" id="tags" autocomplete="off" placeholder="Tags"/></p>
+      <label for="description">Description</label>
+      <textarea name="description" id="description" placeholder="Description"></textarea>
       <input type="hidden" name="url"/>
       <!--<p>Added <span id="date">Just now</span></p>-->
       <p>
-        <button type="button" id="removePost">Delete</button>
+        <button type="button" id="removePost" tabIndex=-1>Delete</button>
         <button type="submit">Done</button>
       </p>
     </form>

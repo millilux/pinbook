@@ -24,7 +24,7 @@
         "_execute_page_action": {
             "suggested_key": {
                 "default": "Ctrl+I"
-            },
+            }
         }
     },
     "options_page": "options.html"

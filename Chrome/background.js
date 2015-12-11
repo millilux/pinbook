@@ -27,10 +27,10 @@ function onTabUpdated(tabId, changeInfo, tab) {
       if (data.posts.length > 0) {
         // URL is in user's Pinboard
         showActiveIcon(tab.id);
-        window.savedPosts[tab.id] = data.posts[0];    // Cache the post info incase the user clicks the popup
+        window.savedPosts[tab.url] = data.posts[0];    // Cache the post info incase the user clicks the popup
       } else {
         // URL is not in user's pinboard
-        delete window.savedPosts[tab.id];             // Clear any cache entry for this post
+        delete window.savedPosts[tab.url];             // Clear any cache entry for this post
       }
     });
 

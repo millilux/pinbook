@@ -10,7 +10,12 @@ var TagSuggest = function (tags, inputElement, containerId) {
     this.containerEl.id = containerId;
   }
 
-  inputElement.parentNode.insertBefore(this.containerEl, this.inputEl);
+  this.inputEl.parentNode.insertBefore(this.containerEl, this.inputEl);
+  var rect = this.inputEl.getBoundingClientRect();
+  this.containerEl.style.position = "absolute";
+  this.containerEl.style.left = rect.left + "px";
+  this.containerEl.style.top = rect.bottom + "px";
+  this.containerEl.style.width = rect.width + "px";
   this.close();
 
   this.inputEl.addEventListener('keyup', this.onKeyUp.bind(this));

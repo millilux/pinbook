@@ -1,6 +1,13 @@
-//'use strict';
+/* Pinboard API error */
+var PinboardError = function(message){
+  'use strict';
+  Error.call(this);
+  this.name = 'PinboardError';
+  this.message = message;
+};
 
-//var https = require('https');
+PinboardError.prototype = Object.create(Error.prototype);
+PinboardError.prototype.constructor = PinboardError;
 
 /* Pinboard API client */
 var Pinboard = (function() {
@@ -27,7 +34,7 @@ var Pinboard = (function() {
 
     return new Promise( function (resolve, reject) {
       if (params && params.hasOwnProperty('url') && !params.url.match(re)){
-        reject(new Error("Invalid URL"));
+        reject(new PinboardError('Invalid URL'));
       }
 
       var xhr = new XMLHttpRequest();
@@ -36,14 +43,19 @@ var Pinboard = (function() {
       xhr.onload = function () {
         if (xhr.status === 200) {
           var data = JSON.parse(xhr.response);
-          resolve(data);
+          // result_code only appears for actions, rather than queries
+          if (data.hasOwnProperty('result_code') && data.result_code !== 'done'){
+            reject(new PinboardError(data.result_code));
+          } else {
+            resolve(data);
+          }
         } else {
-          reject(new Error(xhr.statusText));
+          reject(new PinboardError(xhr.status + " " + xhr.statusText));
         }
       };
 
       xhr.onerror = function () {
-        reject(new Error('Connection error'));
+        reject(new PinboardError('Connection error'));
       };
 
       xhr.send();
@@ -51,7 +63,7 @@ var Pinboard = (function() {
 
   };
 
-  // Creates a function that handles requests for a given Pinboard API method
+  /* Creates a function that handles requests for a given Pinboard API method */
   var method = function (uri) {
     return function(params){
       if (!params){
@@ -90,7 +102,7 @@ var Pinboard = (function() {
 
 }());
 
-// Creates a query string from an object's properties
+/* Creates a query string from key/value properties */
 function param(obj) {
   var qs = '';
   //if (Object.keys(params).length > 0){
@@ -106,52 +118,4 @@ function param(obj) {
   return qs;
 }
 
-/*
-var Pinboard = function(username, apitoken){
-  this.username = username;
-  this.apitoken = apitoken;
-};
-
-Pinboard.endpoint = "https://api.pinboard.in/v1";
-
-Pinboard.prototype = {
-
-  method : function (URI){
-    var self = this;
-    return function(params, callback){
-      return Pinboard.request(URI, params, callback);
-    };
-  },
-
-  request : function (resourceURI, params, callback) {
-    var requestURL = Pinboard.endpoint + resourceURI;
-
-    params.auth_token = this.username + ":" + this.apitoken;
-    params.format = "json";
-
-    //return $.getJSON(requestURL, params, callback);
-    return request(resourceURI, params, callback);
-  },
-
-  posts : function (){
-    var self = this;
-    return {
-      "get" : self.method("/posts/get"),
-      "add" : self.method("/posts/add"),
-      "delete" : self.method("/posts/delete")
-    };
-  }, 
-
-  tags : function (){
-    var self = this;
-    return {
-      "get" : self.method("/tags/get")
-    };
-  }
-
-};
-
-*/
-
-//module.exports = Pinboard;
 
