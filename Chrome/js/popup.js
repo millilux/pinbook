@@ -38,12 +38,11 @@
 
   };
 
-  var login = function (username, apitoken) {
-    pinboard.config(username, apitoken);
+  var login = function (apitoken) {
+    pinboard.config(apitoken);
 
     // Save Pinboard credentials so we can make future API calls
     chrome.storage.local.set({
-      'username' : username,
       'apitoken' : apitoken
     });
   };
@@ -59,7 +58,7 @@
     loginFormEl.style.display = 'none';
     editFormEl.style.display = 'block';
     document.getElementById('currentUser').style.display = 'block';
-    document.getElementById('currentUser').textContent = pinboard.username;
+    document.getElementById('currentUser').textContent = pinboard.username();
 
     titleEl.value = title;
     descriptionEl.value = description;
@@ -162,21 +161,21 @@
     errorEl.textContent = message;
   };
 
-  // Init
-  //document.addEventListener('DOMContentLoaded', ev => {
+  /* Init */
+  document.addEventListener('DOMContentLoaded', ev => {
     chrome.tabs.query({ active : true }, tabs => {
       activeTab = tabs[0];
       setupEvents();  
-      chrome.storage.local.get(['username', 'apitoken'], data => {
-        if (!data.hasOwnProperty('username')) {
+      chrome.storage.local.get(['apitoken'], data => {
+        if (!data.hasOwnProperty('apitoken')) {
           showLoginForm();
           return;
         }
-        login(data.username, data.apitoken);
+        login(data.apitoken);
         getOrCreatePost(activeTab.url, activeTab.title);
         setupTags();
       });
     });
-  //});
+  });
 
 }(Pinboard, chrome.extension.getBackgroundPage()));

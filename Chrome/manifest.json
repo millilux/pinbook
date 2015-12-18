@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "Pinboard.in",
+    "name": "P.in",
     "description": "Add web pages to your Pinboard with a single click",
     "version": "1.0",
     "icons": {
@@ -8,7 +8,7 @@
         "128": "images/icon_active.png"
     },
     "background": {
-        "scripts" : ["pinboard.js", "tagsuggest.js", "background.js"]
+        "scripts" : ["js/pinboard.js", "js/tagsuggest.js", "js/background.js"]
     },
     "permissions": [
         "https://api.pinboard.in/",

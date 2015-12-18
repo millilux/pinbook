@@ -14,17 +14,15 @@ var Pinboard = (function() {
   'use strict';
 
   var API_BASE = 'https://api.pinboard.in/v1', 
-      username,
       apitoken;
 
-  var config = function(_username, _apitoken) {
-    username = _username;
+  var config = function(_apitoken) {
     apitoken = _apitoken;
   };
 
   var re = /^https?:\/\//;
 
-  // Handles requests to Pinboard API  
+  /* Handles requests to Pinboard API */
   var request = function (uri, params) {
     var url = API_BASE + uri;
 
@@ -69,14 +67,19 @@ var Pinboard = (function() {
       if (!params){
         params = {};
       }
-      params.auth_token = username + ':' + apitoken;
+      params.auth_token = apitoken;
       params.format = 'json';
       return request(uri, params);
     };
   };
 
+  var username = function () {
+    return apitoken.split(':')[0];
+  };
+
   return {
     'config' : config,
+    'username' : username,
     'posts' : {
       'add' : method('/posts/add'),
       'delete' : method('/posts/delete'),
@@ -98,11 +101,11 @@ var Pinboard = (function() {
     'notes' : {
       'list' : method('/notes/list')
     }
-  }
+  };
 
 }());
 
-/* Creates a query string from key/value properties */
+/* Helper to create a query string from key/value properties */
 function param(obj) {
   var qs = '';
   //if (Object.keys(params).length > 0){
