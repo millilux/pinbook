@@ -24,24 +24,21 @@
 
     <form id="editPost">
       <p>
-        <!--label for="title">Title</label-->
         <input type="text" name="title" id="title" placeholder="Title"/>
       </p>
       <p>
-        <!--label for="tags">Tags</label-->
         <input type="text" name="tags" id="tags" autocomplete="off" placeholder="Tags"/>
       </p>
-      <!--label for="description">Description</label-->
+
       <textarea name="description" id="description" placeholder="Description"></textarea>
       <input type="hidden" name="url"/>
-      <!--<p>Added <span id="date">Just now</span></p>-->
-
+<!--
       <input type="checkbox" name="private"/>
       <label for="private">Private</label>
 
       <input type="checkbox" name="private"/>
       <label for="private">Read later</label>
-
+-->
       <p>
         <button type="button" id="removePost" tabIndex=-1>Delete</button>
         <button type="submit">Done</button>
@@ -49,9 +46,8 @@
     </form>
 
     <form id="login">
-      <p>
-        <label for="username">User name</label><input type="text" name="username" id="username"/></p>
-      <p><label for="apitoken">Auth Token</label><input type="text" name="apitoken" id="apitoken"/></p>
+      <p>To get started, paste the Pinboard API token from your <a href="https://pinboard.in/settings/password" target="pinboard-account">account settings</a> below.</p>
+      <p><input type="text" name="apitoken" id="apitoken" placeholder="API token"/></p>
       <p><input type="submit" value="Login"/></p>
     </form>
 

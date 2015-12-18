@@ -1,4 +1,4 @@
-(function () {
+(function (pinboard, chrome, window) {
   'use strict';
   chrome.tabs.onUpdated.addListener(onTabUpdated);
 
@@ -10,21 +10,16 @@
       return;
     }
 
-    chrome.storage.local.get(["apitoken"], function (data) {
+    chrome.storage.sync.get(["apitoken"], function (data) {
 
-      if (!data) {
-        console.log("No pinboard credentials");
+      if (!data || !data.hasOwnProperty("apitoken")) {
+        console.log("No Pinboard API token found");
         return;
       }
 
-      if (!data.hasOwnProperty("apitoken")) {
-        console.log("API token is missing");
-        return;
-      }
-
-      // Check if the tab URL is saved in user's Pinboard
-      Pinboard.config(data.apitoken);
-      Pinboard.posts.get({ url : tab.url }).then(function (data) {
+      // Check if this tab URL is saved in user's Pinboard
+      pinboard.config(data.apitoken);
+      pinboard.posts.get({ url : tab.url }).then(function (data) {
         if (data.posts.length > 0) {
           // URL is in user's Pinboard
           showActiveIcon(tab.id);
@@ -48,4 +43,4 @@
     chrome.pageAction.setIcon({ tabId : tabId, path : "images/icon_deactive.png"});
   }
 
-}());
+}(Pinboard, chrome, window));
