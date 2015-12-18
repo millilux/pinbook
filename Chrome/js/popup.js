@@ -31,7 +31,7 @@
 
     // Login
     loginFormEl.addEventListener('submit', ev => {
-      login(ev.target.username.value, ev.target.apitoken.value);
+      login(ev.target.apitoken.value);
       getOrCreatePost(activeTab.url, activeTab.title);
       setupTags();
     });
@@ -42,7 +42,7 @@
     pinboard.config(apitoken);
 
     // Save Pinboard credentials so we can make future API calls
-    chrome.storage.local.set({
+    chrome.storage.sync.set({
       'apitoken' : apitoken
     });
   };
@@ -166,7 +166,7 @@
     chrome.tabs.query({ active : true }, tabs => {
       activeTab = tabs[0];
       setupEvents();  
-      chrome.storage.local.get(['apitoken'], data => {
+      chrome.storage.sync.get(['apitoken'], data => {
         if (!data.hasOwnProperty('apitoken')) {
           showLoginForm();
           return;
