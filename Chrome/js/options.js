@@ -1,12 +1,12 @@
-(function () {
+(function() {
   'use strict';
 
   function save_options() {
     var apitoken = document.getElementById('apitoken').value;
-    var privateDefault = document.getElementById('private').value;
-    var readLaterDefault = document.getElementById('readlater').value;
+    var privateDefault = document.getElementById('private').checked;
+    var readLaterDefault = document.getElementById('readlater').checked;
 
-    chrome.storage.local.set({
+    chrome.storage.sync.set({
       apitoken: apitoken,
       private: privateDefault,
       readlater: readLaterDefault
@@ -23,10 +23,14 @@
   }
 
   function restore_options() {
-    chrome.storage.local.get({
-      apitoken: ""
-    }, function(items) {
+    chrome.storage.sync.get({
+      apitoken: "",
+      private: true,
+      readlater: false
+    }, items => {
       document.getElementById('apitoken').value = items.apitoken;
+      document.getElementById('private').checked = items.private;
+      document.getElementById('readlater').checked = items.readlater;
     });
   }
 
