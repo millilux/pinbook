@@ -12,6 +12,8 @@ class Popup {
     this.descriptionEl  = document.querySelector('textarea[name=description]');
     this.tagsEl         = document.querySelector('input[name=tags]');
     this.urlEl          = document.querySelector('input[name=url]');
+    this.privateEl      = document.querySelector('input[name=private]');
+    this.readLaterEl    = document.querySelector('input[name=readlater]');
     this.dateEl         = document.getElementById('date');
     this.errorEl        = document.querySelector('.error');
     this.connErrorMsg   = 'Could not connect to Pinboard';
@@ -25,7 +27,14 @@ class Popup {
     // Update post
     this.editFormEl.addEventListener('submit', ev => {
       ev.preventDefault();
-      this.updatePost(this.activeTab.url, this.titleEl.value, this.descriptionEl.value, this.tagsEl.value);
+      this.updatePost({
+        'url': this.activeTab.url,
+        'description' : this.titleEl.value,
+        'extended' : this.descriptionEl.value,
+        'tags' : this.tagsEl.value,
+        'shared' : this.privateEl.checked ? 'no' : 'yes',
+        'toread' : this.readLaterEl.checked ? 'yes' : 'no'
+      });
     });
 
     // Delete post
@@ -51,12 +60,16 @@ class Popup {
     });
   }
 
+  defaults(opts){
+    this._defaults = opts;
+  }
+
   showLoginForm () {
     this.loginFormEl.style.display = 'block';
     this.editFormEl.style.display = 'none';
   }
 
-  showPost (url, title, description, tags, isNew){
+  showPost (post, isNew){
     this.activateIcon();
 
     this.loginFormEl.style.display = 'none';
@@ -64,15 +77,17 @@ class Popup {
     document.getElementById('currentUser').style.display = 'block';
     document.getElementById('currentUser').textContent = this.pinboard.username;
 
-    this.titleEl.value = title;
-    this.descriptionEl.value = description;
-    this.tagsEl.value = tags;
+    this.titleEl.value = post.description;
+    this.descriptionEl.value = post.extended;
+    this.tagsEl.value = post.tags;
+    this.privateEl.checked = post.shared === 'no';
+    this.readLaterEl.checked = post.toread === 'yes';
     if (isNew){
       document.getElementById('heading').textContent = 'Added to Pinboard!'; 
     }
     this.titleEl.select();
     return new Promise((resolve, reject) => {
-      resolve({ url: url, description: title, extended: description, tags: tags });
+      resolve(post);
     });
   }
 
@@ -87,17 +102,18 @@ class Popup {
   getOrCreatePost (url, title){
     if (url in this.background.savedPosts === false){
       // New post
-      this.showPost(url, title, null, null, true);
-      return this.pinboard.posts.add({
+      let post = {
         url : url, 
-        description : title 
-      }).then(data => {
-          this.background.savedPosts[url] = {
-            href : url,
-            description : title,
-            extended : "",
-            tags: ""
-          };
+        description : title,
+        extended : "",
+        tags: "" ,
+        shared: this._defaults.private ? 'no' : 'yes',
+        toread: this._defaults.readlater ? 'yes' : 'no',
+      };
+      this.showPost(post, true);
+      return this.pinboard.posts.add(post)
+        .then(response => {
+          this.background.savedPosts[url] = post;
       }).catch(error => {
         this.errorMessage('Error adding post to Pinboard: ' + error.message);
         this.deactivateIcon();
@@ -105,36 +121,29 @@ class Popup {
     } else {
       // Existing post
       let post = this.background.savedPosts[url];
-      return this.showPost(post.href, post.description, post.extended, post.tags, false);
+      return this.showPost(post, false);
     }
   }
 
-  updatePost (url, title, description, tags){
-    return this.pinboard.posts.add({
-      url : url,
-      replace : 'yes',
-      description : title,
-      extended : description,
-      tags: tags
-    }).then(() => {
-      this.background.savedPosts[url] = {
-        href : url,
-        description : title,
-        extended : description,
-        tags: tags
-      };
+  updatePost (post){
+    let data = {'replace' : 'yes'};
+    for (let prop in post){
+      data[prop] = post[prop];
+    }
+    return this.pinboard.posts.add(data).then(response => {
+      this.background.savedPosts[post.url] = post;
       window.close();
     }).catch(error => {
       this.errorMessage(error.message);
       this.deactivateIcon();
-      window.close();    
+      window.close();
     });
   }
 
   deletePost (url){
     return this.pinboard.posts.delete({
       url : url
-    }).then(data => {
+    }).then(response => {
       delete this.background.savedPosts[url];
       chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, function(e){
         window.close();
@@ -146,8 +155,8 @@ class Popup {
 
   setupTags (){
     var tagSuggest;
-    return this.pinboard.tags.get().then(data => {
-      tagSuggest = new TagSuggest(Object.keys(data), this.tagsEl);
+    return this.pinboard.tags.get().then(response => {
+      tagSuggest = new TagSuggest(Object.keys(response), this.tagsEl);
     }).catch(error => {
       this.errorMessage('Error fetching tags from Pinboard: ' + error.message);
     });
@@ -158,7 +167,6 @@ class Popup {
   }
 
 }
-
 
 /* Init */
 document.addEventListener('DOMContentLoaded', ev => {
@@ -171,9 +179,9 @@ document.addEventListener('DOMContentLoaded', ev => {
         return;
       }
       popup.login(data.apitoken);
+      popup.defaults({'private' : data.private, 'readlater': data.readlater });
       popup.getOrCreatePost(tabs[0].url, tabs[0].title)
         .then(() => popup.setupTags());
-
     });
   });
 });
