@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
-    "name": "P.in",
-    "description": "Add web pages to Pinboard with a single click.",
+    "name": "Pinbook",
+    "description": "Add bookmarks to Pinboard as easily as regular Chrome bookmarks.",
     "version": "0.1.0",
     "icons": {
         "16": "images/icon_active.png",
