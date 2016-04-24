@@ -1,7 +1,7 @@
-(function (pinboard, background) {
+(function (pinboard, chrome, window) {
   'use strict';
 
-  var savedTags = {};
+  var background = chrome.extension.getBackgroundPage();
   var activeTab = null;
 
   // Cached DOM elements
@@ -41,7 +41,7 @@
   var login = function (apitoken) {
     pinboard.config(apitoken);
 
-    // Save Pinboard credentials so we can make future API calls
+    // Save Pinboard credentials for future API calls
     chrome.storage.sync.set({
       'apitoken' : apitoken
     });
@@ -76,15 +76,6 @@
   var deactivateIcon = function(){
     chrome.pageAction.setIcon({ tabId : activeTab.id, path : 'images/icon_deactive.png'});
   };
-
-/*
-  var getActiveTab = function (callback) {
-    chrome.tabs.query({ active : true }, function (tabs) {
-      activeTab = tabs[0];
-      callback(tabs[0]);
-    });
-  };
-*/
 
   var getOrCreatePost = function(url, title){
     if (url in background.savedPosts === false){
@@ -150,10 +141,9 @@
   var setupTags = function(){
     var tagSuggest;
     return pinboard.tags.get().then(data => {
-      savedTags = data;
       tagSuggest = new TagSuggest(Object.keys(data), tagsEl);
     }).catch(error => {
-      console.log('Error fetching Pinboard tags');
+      console.log('Error fetching tags from Pinboard: ' + error.message);
     });
   };
 
@@ -178,4 +168,4 @@
     });
   });
 
-}(Pinboard, chrome.extension.getBackgroundPage()));
+}(Pinboard, chrome, window));

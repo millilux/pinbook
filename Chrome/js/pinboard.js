@@ -108,16 +108,13 @@ var Pinboard = (function() {
 /* Helper to create a query string from key/value properties */
 function param(obj) {
   var qs = '';
-  //if (Object.keys(params).length > 0){
-  //  qs += '?';
-    var pairs = [];
-    for (var prop in obj){
-      if (obj.hasOwnProperty(prop)){
-        pairs.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
-      }
+  var pairs = [];
+  for (var prop in obj){
+    if (obj.hasOwnProperty(prop)){
+      pairs.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
     }
-    qs += pairs.join('&');
-  //}
+  }
+  qs += pairs.join('&');
   return qs;
 }
 
