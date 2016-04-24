@@ -45,8 +45,8 @@ class Popup {
     // Login
     this.loginFormEl.addEventListener('submit', ev => {
       this.login(ev.target.apitoken.value);
-      this.getOrCreatePost(this.activeTab.url, this.activeTab.title);
-      setupTags();
+      this.getOrCreatePost(this.activeTab.url, this.activeTab.title)
+        .then(() => this.setupTags());
     });
 
   }
@@ -100,7 +100,11 @@ class Popup {
   }
 
   getOrCreatePost (url, title){
-    if (url in this.background.savedPosts === false){
+    if (url in this.background.savedPosts === true){
+      // Existing post
+      let post = this.background.savedPosts[url];
+      return this.showPost(post, false);
+    } else {
       // New post
       let post = {
         url : url, 
@@ -118,10 +122,6 @@ class Popup {
         this.errorMessage('Error adding post to Pinboard: ' + error.message);
         this.deactivateIcon();
       });
-    } else {
-      // Existing post
-      let post = this.background.savedPosts[url];
-      return this.showPost(post, false);
     }
   }
 
