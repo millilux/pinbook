@@ -81,7 +81,7 @@
     if (url in background.savedPosts === false){
       // New post
       showPost(url, title, null, null, true);
-      return pinboard.posts.add({
+      pinboard.posts.add({
         url : url, 
         description : title 
       }).then(data => {
@@ -97,7 +97,6 @@
       });
     } else {
       // Existing post
-      // TODO: return a promise which resolves with the post? or ditch the promise returns entirely?
       var post = background.savedPosts[url];
       showPost(post.href, post.description, post.extended, post.tags, false);
     }
@@ -143,7 +142,7 @@
     return pinboard.tags.get().then(data => {
       tagSuggest = new TagSuggest(Object.keys(data), tagsEl);
     }).catch(error => {
-      console.log('Error fetching tags from Pinboard: ' + error.message);
+      errorMessage('Error fetching tags from Pinboard: ' + error.message);
     });
   };
 
@@ -155,7 +154,8 @@
   document.addEventListener('DOMContentLoaded', ev => {
     chrome.tabs.query({ active : true }, tabs => {
       activeTab = tabs[0];
-      setupEvents();  
+      setupEvents();
+      // TODO: fetch the private and read later default options
       chrome.storage.sync.get(['apitoken'], data => {
         if (!data.hasOwnProperty('apitoken')) {
           showLoginForm();
