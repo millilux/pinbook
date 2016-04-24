@@ -1,41 +1,43 @@
-/* Pinboard API error */
-var PinboardError = function(message){
-  'use strict';
-  Error.call(this);
-  this.name = 'PinboardError';
-  this.message = message;
-};
 
-PinboardError.prototype = Object.create(Error.prototype);
-PinboardError.prototype.constructor = PinboardError;
+class PinboardError extends Error {
+  constructor(message){
+    super(message);
+    this.name = 'PinboardError';
+    this.message = message;    
+  }
+}
 
 /* Pinboard API client */
-var Pinboard = (function() {
-  'use strict';
+class Pinboard {
+  constructor(apitoken){
+    this.apitoken = apitoken;
+  }
 
-  var API_BASE = 'https://api.pinboard.in/v1', 
-      apitoken;
-
-  var config = function(_apitoken) {
-    apitoken = _apitoken;
-  };
-
-  var re = /^https?:\/\//;
+  static get API_BASE(){
+    return 'https://api.pinboard.in/v1';
+  }
 
   /* Handles requests to Pinboard API */
-  var request = function (uri, params) {
-    var url = API_BASE + uri;
+  request (uri, params) {
+    let url = Pinboard.API_BASE + uri;
+    let re = /^https?:\/\//;
 
     if (params){
+      params.format = 'json';
+      params.auth_token = this.apitoken;
       url += '?' + param(params);
     }
 
-    return new Promise( function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       if (params && params.hasOwnProperty('url') && !params.url.match(re)){
         reject(new PinboardError('Invalid URL'));
       }
 
-      var xhr = new XMLHttpRequest();
+      if (!this.apitoken){
+        reject(new PinboardError('Missing auth token'));
+      }
+
+      let xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
 
       xhr.onload = function () {
@@ -59,57 +61,67 @@ var Pinboard = (function() {
       xhr.send();
     });
 
-  };
+  }
 
   /* Creates a function that handles requests for a given Pinboard API method */
-  var method = function (uri) {
-    return function(params){
-      if (!params){
-        params = {};
-      }
-      params.auth_token = apitoken;
-      params.format = 'json';
-      return request(uri, params);
+  method (uri) {
+    return params => {
+      return this.request(uri, params || {});
     };
-  };
+  }
 
-  var username = function () {
-    return apitoken.split(':')[0];
-  };
+  get username() {
+    return this.apitoken.split(':')[0];
+  }
 
-  return {
-    'config' : config,
-    'username' : username,
-    'posts' : {
-      'add' : method('/posts/add'),
-      'delete' : method('/posts/delete'),
-      'get' : method('/posts/get'),
-      'dates' : method('/posts/dates'),
-      'recent' : method('/posts/recent'),
-      'all' : method('/posts/all'),
-      'suggest' : method('/posts/suggest')
-    }, 
-    'tags' : {
-      'get' : method('/tags/get'),
-      'delete' : method('/tags/delete'),
-      'rename' : method('/tags/rename')
-    }, 
-    'user' : {
-      'secret' : method('/user/secret'),
-      'api_token' : method('/user/api_token')
-    },
-    'notes' : {
-      'list' : method('/notes/list')
+  get apitoken() {
+    return this._apitoken;
+  }
+
+  set apitoken(val) {
+    this._apitoken = val;
+  }
+
+  get posts(){
+    return {
+      'add': this.method('/posts/add'),
+      'delete': this.method('/posts/delete'),
+      'get': this.method('/posts/get'),
+      'dates': this.method('/posts/dates'),
+      'recent': this.method('/posts/recent'),
+      'all': this.method('/posts/all'),
+      'suggest': this.method('/posts/suggest'),
     }
-  };
+  }
 
-}());
+  get tags(){
+    return {
+      'delete': this.method('/tags/delete'),
+      'get': this.method('/tags/get'),
+      'rename': this.method('/tags/rename'),
+    }
+  }
+
+  get user(){
+    return {
+      'secret': this.method('/user/secret'),
+      'api_token': this.method('/tags/api_token'),
+    }
+  }
+
+  get notes(){
+    return {
+      'list': this.method('/notes/list'),
+    }
+  }
+
+}
 
 /* Helper to create a query string from key/value properties */
 function param(obj) {
-  var qs = '';
-  var pairs = [];
-  for (var prop in obj){
+  let qs = '';
+  let pairs = [];
+  for (let prop in obj){
     if (obj.hasOwnProperty(prop)){
       pairs.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
     }

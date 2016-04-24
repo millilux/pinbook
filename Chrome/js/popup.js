@@ -1,116 +1,123 @@
-(function (pinboard, chrome, window) {
-  'use strict';
+class Popup {
+  constructor (activeTab) {
 
-  var background = chrome.extension.getBackgroundPage();
-  var activeTab = null;
+    this.background = chrome.extension.getBackgroundPage();
+    this.activeTab = activeTab;
 
-  // Cached DOM elements
-  var editFormEl     = document.getElementById('editPost');
-  var deleteButtonEl = document.getElementById('removePost');
-  var loginFormEl    = document.getElementById('login');
-  var titleEl        = document.querySelector('input[name=title]');
-  var descriptionEl  = document.querySelector('textarea[name=description]');
-  var tagsEl         = document.querySelector('input[name=tags]');
-  var urlEl          = document.querySelector('input[name=url]');
-  var dateEl         = document.getElementById('date');
-  var errorEl        = document.querySelector('.error');
-  var connErrorMsg   = 'Could not connect to Pinboard';
+    // Cached DOM elements
+    this.editFormEl     = document.getElementById('editPost');
+    this.deleteButtonEl = document.getElementById('removePost');
+    this.loginFormEl    = document.getElementById('login');
+    this.titleEl        = document.querySelector('input[name=title]');
+    this.descriptionEl  = document.querySelector('textarea[name=description]');
+    this.tagsEl         = document.querySelector('input[name=tags]');
+    this.urlEl          = document.querySelector('input[name=url]');
+    this.dateEl         = document.getElementById('date');
+    this.errorEl        = document.querySelector('.error');
+    this.connErrorMsg   = 'Could not connect to Pinboard';
 
-  var setupEvents = function () {
+    this.setupEvents();
+
+  }
+
+  setupEvents() {
 
     // Update post
-    editFormEl.addEventListener('submit', ev => {
+    this.editFormEl.addEventListener('submit', ev => {
       ev.preventDefault();
-      updatePost(activeTab.url, titleEl.value, descriptionEl.value, tagsEl.value);
+      this.updatePost(this.activeTab.url, this.titleEl.value, this.descriptionEl.value, this.tagsEl.value);
     });
 
     // Delete post
-    deleteButtonEl.addEventListener('click', ev => {
-      deletePost(activeTab.url);
+    this.deleteButtonEl.addEventListener('click', ev => {
+      this.deletePost(this.activeTab.url);
     });
 
     // Login
-    loginFormEl.addEventListener('submit', ev => {
-      login(ev.target.apitoken.value);
-      getOrCreatePost(activeTab.url, activeTab.title);
+    this.loginFormEl.addEventListener('submit', ev => {
+      this.login(ev.target.apitoken.value);
+      this.getOrCreatePost(this.activeTab.url, this.activeTab.title);
       setupTags();
     });
 
-  };
+  }
 
-  var login = function (apitoken) {
-    pinboard.config(apitoken);
+  login (apitoken) {
+    this.pinboard = new Pinboard(apitoken);
 
     // Save Pinboard credentials for future API calls
     chrome.storage.sync.set({
       'apitoken' : apitoken
     });
-  };
+  }
 
-  var showLoginForm = function () {
-    loginFormEl.style.display = 'block';
-    editFormEl.style.display = 'none';
-  };
+  showLoginForm () {
+    this.loginFormEl.style.display = 'block';
+    this.editFormEl.style.display = 'none';
+  }
 
-  var showPost = function(url, title, description, tags, isNew){
-    activateIcon();
+  showPost (url, title, description, tags, isNew){
+    this.activateIcon();
 
-    loginFormEl.style.display = 'none';
-    editFormEl.style.display = 'block';
+    this.loginFormEl.style.display = 'none';
+    this.editFormEl.style.display = 'block';
     document.getElementById('currentUser').style.display = 'block';
-    document.getElementById('currentUser').textContent = pinboard.username();
+    document.getElementById('currentUser').textContent = this.pinboard.username;
 
-    titleEl.value = title;
-    descriptionEl.value = description;
-    tagsEl.value = tags;
+    this.titleEl.value = title;
+    this.descriptionEl.value = description;
+    this.tagsEl.value = tags;
     if (isNew){
       document.getElementById('heading').textContent = 'Added to Pinboard!'; 
     }
-    titleEl.select();
-  };
+    this.titleEl.select();
+    return new Promise((resolve, reject) => {
+      resolve({ url: url, description: title, extended: description, tags: tags });
+    });
+  }
 
-  var activateIcon = function(){
-    chrome.pageAction.setIcon({ tabId : activeTab.id, path : 'images/icon_active.png'});
-  };
+  activateIcon (){
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'});
+  }
 
-  var deactivateIcon = function(){
-    chrome.pageAction.setIcon({ tabId : activeTab.id, path : 'images/icon_deactive.png'});
-  };
+  deactivateIcon (){
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'});
+  }
 
-  var getOrCreatePost = function(url, title){
-    if (url in background.savedPosts === false){
+  getOrCreatePost (url, title){
+    if (url in this.background.savedPosts === false){
       // New post
-      showPost(url, title, null, null, true);
-      pinboard.posts.add({
+      this.showPost(url, title, null, null, true);
+      return this.pinboard.posts.add({
         url : url, 
         description : title 
       }).then(data => {
-          background.savedPosts[url] = {
+          this.background.savedPosts[url] = {
             href : url,
             description : title,
             extended : "",
             tags: ""
           };
       }).catch(error => {
-        errorMessage('Error adding post to Pinboard: ' + error.message);
-        deactivateIcon();
+        this.errorMessage('Error adding post to Pinboard: ' + error.message);
+        this.deactivateIcon();
       });
     } else {
       // Existing post
-      var post = background.savedPosts[url];
-      showPost(post.href, post.description, post.extended, post.tags, false);
+      let post = this.background.savedPosts[url];
+      return this.showPost(post.href, post.description, post.extended, post.tags, false);
     }
-  };
+  }
 
-  var updatePost = function(url, title, description, tags){
-    return pinboard.posts.add({
+  updatePost (url, title, description, tags){
+    return this.pinboard.posts.add({
       url : url,
       replace : 'yes',
       description : title,
       extended : description,
       tags: tags
     }).then(() => {
-      background.savedPosts[url] = {
+      this.background.savedPosts[url] = {
         href : url,
         description : title,
         extended : description,
@@ -118,54 +125,55 @@
       };
       window.close();
     }).catch(error => {
-      errorMessage(error.message);
-      deactivateIcon();
+      this.errorMessage(error.message);
+      this.deactivateIcon();
       window.close();    
     });
-  };
+  }
 
-  var deletePost = function(url){
-    return pinboard.posts.delete({
+  deletePost (url){
+    return this.pinboard.posts.delete({
       url : url
     }).then(data => {
-      delete background.savedPosts[url];
-      chrome.pageAction.setIcon({ tabId : activeTab.id, path : 'images/icon_deactive.png'}, function(e){
+      delete this.background.savedPosts[url];
+      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, function(e){
         window.close();
       });
     }).catch(error => {
-      errorMessage('Error deleting post from Pinboard: ' + error.message);
+      this.errorMessage('Error deleting post from Pinboard: ' + error.message);
     });
-  };
+  }
 
-  var setupTags = function(){
+  setupTags (){
     var tagSuggest;
-    return pinboard.tags.get().then(data => {
-      tagSuggest = new TagSuggest(Object.keys(data), tagsEl);
+    return this.pinboard.tags.get().then(data => {
+      tagSuggest = new TagSuggest(Object.keys(data), this.tagsEl);
     }).catch(error => {
-      errorMessage('Error fetching tags from Pinboard: ' + error.message);
+      this.errorMessage('Error fetching tags from Pinboard: ' + error.message);
     });
-  };
+  }
 
-  var errorMessage = function(message){
-    errorEl.textContent = message;
-  };
+  errorMessage (message){
+    this.errorEl.textContent = message;
+  }
 
-  /* Init */
-  document.addEventListener('DOMContentLoaded', ev => {
-    chrome.tabs.query({ active : true }, tabs => {
-      activeTab = tabs[0];
-      setupEvents();
-      // TODO: fetch the private and read later default options
-      chrome.storage.sync.get(['apitoken'], data => {
-        if (!data.hasOwnProperty('apitoken')) {
-          showLoginForm();
-          return;
-        }
-        login(data.apitoken);
-        getOrCreatePost(activeTab.url, activeTab.title);
-        setupTags();
-      });
+}
+
+
+/* Init */
+document.addEventListener('DOMContentLoaded', ev => {
+  chrome.tabs.query({ active : true }, tabs => {
+    let popup = new Popup(tabs[0]);
+    // TODO: fetch the private and read later default options
+    chrome.storage.sync.get(['apitoken', 'private', 'readlater'], data => {
+      if (!data.hasOwnProperty('apitoken')) {
+        popup.showLoginForm();
+        return;
+      }
+      popup.login(data.apitoken);
+      popup.getOrCreatePost(tabs[0].url, tabs[0].title)
+        .then(() => popup.setupTags());
+
     });
   });
-
-}(Pinboard, chrome, window));
+});

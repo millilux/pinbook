@@ -1,4 +1,4 @@
-(function (pinboard, chrome, window) {
+(function (Pinboard, chrome, window) {
   'use strict';
   chrome.tabs.onUpdated.addListener(onTabUpdated);
 
@@ -18,7 +18,7 @@
       }
 
       // Check if this tab URL is saved in user's Pinboard
-      pinboard.config(data.apitoken);
+      var pinboard = new Pinboard(data.apitoken);
       pinboard.posts.get({ url : tab.url }).then(function (data) {
         if (data.posts.length > 0) {
           // URL is in user's Pinboard
