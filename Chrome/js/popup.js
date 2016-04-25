@@ -145,7 +145,7 @@ class Popup {
       url : url
     }).then(response => {
       delete this.background.savedPosts[url];
-      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, function(e){
+      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, ev => {
         window.close();
       });
     }).catch(error => {

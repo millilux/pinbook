@@ -10,7 +10,7 @@
       return;
     }
 
-    chrome.storage.sync.get(["apitoken"], function (data) {
+    chrome.storage.sync.get(["apitoken"], data => {
 
       if (!data || !data.hasOwnProperty("apitoken")) {
         console.log("No Pinboard API token found");
@@ -19,7 +19,7 @@
 
       // Check if this tab URL is saved in user's Pinboard
       var pinboard = new Pinboard(data.apitoken);
-      pinboard.posts.get({ url : tab.url }).then(function (data) {
+      pinboard.posts.get({ url : tab.url }).then(data => {
         if (data.posts.length > 0) {
           // URL is in user's Pinboard
           showActiveIcon(tab.id);
