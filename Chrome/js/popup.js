@@ -101,12 +101,20 @@ class Popup {
     });
   }
 
-  activateIcon (){
-    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'});
+  // TODO: call from background?
+  activateIcon (callback){
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
+      chrome.pageAction.setTitle({ tabId : this.activeTab.id, title : "Edit"});
+      if (callback) callback();
+    });
+
   }
 
-  deactivateIcon (){
-    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'});
+  deactivateIcon (callback){
+    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, () => {
+      chrome.pageAction.setTitle({ tabId : this.activeTab.id, title : "Save current URL to Pinboard.in"});
+      if (callback) callback();
+    });  
   }
 
   getOrCreatePost (url, title){
@@ -159,9 +167,7 @@ class Popup {
       url : url
     }).then(response => {
       delete this.background.savedPosts[url];
-      chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, ev => {
-        window.close();
-      });
+      this.deactivateIcon(() => window.close());
     }).catch(error => {
       this.errorMessage('Delete failed: ' + error.message);
     });

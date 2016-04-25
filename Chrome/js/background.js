@@ -30,22 +30,24 @@
       let pinboard = new Pinboard(data.apitoken);
       pinboard.posts.get({ url : tab.url }).then(data => {
         if (data.posts.length > 0) {
-          showActiveIcon(tab.id);
+          showActive(tab.id);
           window.savedPosts[tab.url] = data.posts[0];    // Cache the post info incase the user clicks the popup
         } else {
-          showDeactiveIcon(tab.id);
+          showDeactive(tab.id);
           delete window.savedPosts[tab.url];             // Clear any cache entry for this post
         }
       });
     });    
   }
 
-  function showActiveIcon(tabId){
+  function showActive(tabId){
     chrome.pageAction.setIcon({ tabId : tabId, path : "images/icon_active.png"});
+    chrome.pageAction.setTitle({ tabId : tabId, title : "Edit"});
   }
 
-  function showDeactiveIcon(tabId){
+  function showDeactive(tabId){
     chrome.pageAction.setIcon({ tabId : tabId, path : "images/icon_deactive.png"});
+    chrome.pageAction.setTitle({ tabId : tabId, title : "Save current URL to Pinboard.in"});
   }
 
 }(Pinboard, chrome, window));
