@@ -7,6 +7,9 @@
       h3 {margin-bottom: 0; font-size: 120%;}
       #currentUser {display: none; margin-top: 3px; color: #aaa;}
       #login {display: none;}
+      #checkboxes {display: none;}
+      #options {float: right; margin: 0; padding: 0; opacity: 0.25; cursor: pointer;}
+      #options img {height: 14px; width: 14px;}
       label {margin-right: 5px;}
       input[type=text] {width: 25em; padding: 1px 2px;}
       input[type=checkbox] {margin: 7px 0;}
@@ -18,6 +21,7 @@
     <link rel="stylesheet" type="text/css" href="css/tagsuggest.css">
   </head>
   <body>
+    <p id="options"><img src="images/cogwheel.png"></a></p>
     <h3 id="heading">Pinboard</h3>
     <p id="currentUser"></p>
     <p class="error"></p>
@@ -33,11 +37,13 @@
       <textarea name="description" id="description" placeholder="Description"></textarea>
       <input type="hidden" name="url"/>
 
-      <input type="checkbox" name="private"/>
-      <label for="private">Private</label>
+      <div id="checkboxes">
+        <input type="checkbox" name="private"/>
+        <label for="private">Private</label>
 
-      <input type="checkbox" name="readlater"/>
-      <label for="readlater">Read later</label>
+        <input type="checkbox" name="readlater"/>
+        <label for="readlater">Read later</label>
+      </div>
 
       <p>
         <button type="button" id="removePost" tabIndex=-1>Delete</button>

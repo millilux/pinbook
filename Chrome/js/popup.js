@@ -15,6 +15,7 @@ class Popup {
     this.privateEl      = document.querySelector('input[name=private]');
     this.readLaterEl    = document.querySelector('input[name=readlater]');
     this.dateEl         = document.getElementById('date');
+    this.optionsEl      = document.getElementById('options');
     this.errorEl        = document.querySelector('.error');
     this.connErrorMsg   = 'Could not connect to Pinboard';
 
@@ -49,6 +50,11 @@ class Popup {
         .then(() => this.setupTags());
     });
 
+    // Options
+    this.optionsEl.addEventListener('click', ev => {
+      chrome.runtime.openOptionsPage();
+    });
+
   }
 
   login (apitoken) {
@@ -58,6 +64,10 @@ class Popup {
     chrome.storage.sync.set({
       'apitoken' : apitoken
     });
+  }
+
+  showCheckboxes(){
+    document.getElementById('checkboxes').style.display = 'block';
   }
 
   defaults(opts){
@@ -173,10 +183,13 @@ document.addEventListener('DOMContentLoaded', ev => {
   chrome.tabs.query({ active : true }, tabs => {
     let popup = new Popup(tabs[0]);
     // TODO: fetch the private and read later default options
-    chrome.storage.sync.get(['apitoken', 'private', 'readlater'], data => {
+    chrome.storage.sync.get(['apitoken', 'private', 'readlater', 'showcheckboxes'], data => {
       if (!data.hasOwnProperty('apitoken')) {
         popup.showLoginForm();
         return;
+      }
+      if (data.showcheckboxes){
+        popup.showCheckboxes();
       }
       popup.login(data.apitoken);
       popup.defaults({'private' : data.private, 'readlater': data.readlater });
