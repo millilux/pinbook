@@ -7,18 +7,17 @@
 
   function onTabActivated (activeInfo) {
     chrome.tabs.get(activeInfo.tabId, tab => {
-      pinboardCheck(tab);
+      updateBrowserAction(tab);
     });
   }
 
   function onTabUpdated (tabId, changeInfo, tab) {
-    chrome.pageAction.show(tabId);
-    pinboardCheck(tab);
+    updateBrowserAction(tab);
   }
 
-  // Check if there's a Pinboard entry for a given tab
-  function pinboardCheck (tab) {
-    if (!tab.url.match(/^http/)) {
+  // Check if there's a Pinboard entry for a given tab and update the browser action icon & title
+  function updateBrowserAction (tab) {
+    if (!isSaveable(tab.url)) {
       return;
     }
 
@@ -40,14 +39,21 @@
     });
   }
 
+  function isSaveable (url) {
+    if (url.match(/^http/)) {
+      return true;
+    }
+    return false;
+  }
+
   function showActive (tabId) {
-    chrome.pageAction.setIcon({tabId : tabId, path : 'images/icon_active.png'});
-    chrome.pageAction.setTitle({tabId : tabId, title : 'Edit'});
+    chrome.browserAction.setIcon({tabId : tabId, path : 'images/icon_active.png'});
+    chrome.browserAction.setTitle({tabId : tabId, title : 'Edit'});
   }
 
   function showDeactive (tabId) {
-    chrome.pageAction.setIcon({tabId : tabId, path : 'images/icon_deactive.png'});
-    chrome.pageAction.setTitle({tabId : tabId, title : 'Save current URL to Pinboard.in'});
+    chrome.browserAction.setIcon({tabId : tabId, path : 'images/icon_deactive.png'});
+    chrome.browserAction.setTitle({tabId : tabId, title : 'Save current URL to Pinboard.in'});
   }
 
 }(Pinboard, chrome, window));

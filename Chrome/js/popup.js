@@ -104,16 +104,16 @@ class Popup {
   }
 
   activateIcon (callback) {
-    chrome.pageAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
-      chrome.pageAction.setTitle({tabId : this.activeTab.id, title : 'Edit'});
+    chrome.browserAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
+      chrome.browserAction.setTitle({tabId : this.activeTab.id, title : 'Edit'});
       if (callback) callback();
     });
 
   }
 
   deactivateIcon (callback) {
-    chrome.pageAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, () => {
-      chrome.pageAction.setTitle({tabId : this.activeTab.id, title : 'Save current URL to Pinboard.in'});
+    chrome.browserAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, () => {
+      chrome.browserAction.setTitle({tabId : this.activeTab.id, title : 'Save current URL to Pinboard.in'});
       if (callback) callback();
     });
   }
@@ -192,9 +192,14 @@ class Popup {
 
 /* Init */
 document.addEventListener('DOMContentLoaded', ev => {
-  chrome.tabs.query({active : true}, tabs => {
+  chrome.tabs.query({active : true, currentWindow : true}, tabs => {
     let popup = new Popup(tabs[0]);
-    // TODO: fetch the private and read later default options
+
+    if (!tabs[0].url.match(/^http/)) {
+      popup.errorMessage('Pinboard only saves "http" and "https" pages');
+      return;
+    }
+
     chrome.storage.sync.get(['apitoken', 'private', 'readlater', 'showcheckboxes'], data => {
       if (!data.hasOwnProperty('apitoken')) {
         popup.showLoginForm();
