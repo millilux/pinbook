@@ -1,0 +1,14 @@
+body {font: 11px Helvetica, sans-serif; margin: 15px 20px; min-width: 25em; overflow-x: hidden;}
+h3 {margin-bottom: 0; font-size: 120%;}
+#currentUser {display: none; margin-top: 3px; color: #aaa;}
+#login {display: none;}
+#checkboxes {display: none;}
+#options {float: right; margin: 0; padding: 0; opacity: 0.25; cursor: pointer;}
+#options img {height: 14px; width: 14px;}
+label {margin-right: 5px;}
+input[type=text] {width: 25em; padding: 1px 2px;}
+input[type=checkbox] {margin: 7px 0;}
+button[type=submit] {}
+textarea {width: 25em; height: 4.6em; border-color: #ccc; padding: 4px;}
+.error {color: red; font-weight: bold;}
+.tagSuggest {font-size: 11px;}
