@@ -1,3 +1,5 @@
+'use strict';
+
 class Popup {
   constructor (activeTab) {
 
@@ -24,7 +26,7 @@ class Popup {
 
   }
 
-  setupEvents() {
+  setupEvents () {
 
     // Update post
     this.editFormEl.addEventListener('submit', ev => {
@@ -66,11 +68,11 @@ class Popup {
     });
   }
 
-  showCheckboxes(){
+  showCheckboxes () {
     document.getElementById('checkboxes').style.display = 'block';
   }
 
-  defaults(opts){
+  defaults (opts) {
     this._defaults = opts;
   }
 
@@ -79,7 +81,7 @@ class Popup {
     this.editFormEl.style.display = 'none';
   }
 
-  showPost (post, isNew){
+  showPost (post, isNew) {
     this.activateIcon();
 
     this.loginFormEl.style.display = 'none';
@@ -92,8 +94,8 @@ class Popup {
     this.tagsEl.value = post.tags;
     this.privateEl.checked = post.shared === 'no';
     this.readLaterEl.checked = post.toread === 'yes';
-    if (isNew){
-      this.headingEl.textContent = 'Added to Pinboard!'; 
+    if (isNew) {
+      this.headingEl.textContent = 'Added to Pinboard!';
     }
     this.titleEl.select();
     return new Promise((resolve, reject) => {
@@ -101,56 +103,56 @@ class Popup {
     });
   }
 
-  // TODO: call from background?
-  activateIcon (callback){
-    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
-      chrome.pageAction.setTitle({ tabId : this.activeTab.id, title : "Edit"});
+  activateIcon (callback) {
+    chrome.pageAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
+      chrome.pageAction.setTitle({tabId : this.activeTab.id, title : 'Edit'});
       if (callback) callback();
     });
 
   }
 
-  deactivateIcon (callback){
-    chrome.pageAction.setIcon({ tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, () => {
-      chrome.pageAction.setTitle({ tabId : this.activeTab.id, title : "Save current URL to Pinboard.in"});
+  deactivateIcon (callback) {
+    chrome.pageAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, () => {
+      chrome.pageAction.setTitle({tabId : this.activeTab.id, title : 'Save current URL to Pinboard.in'});
       if (callback) callback();
-    });  
+    });
   }
 
-  getOrCreatePost (url, title){
+  getOrCreatePost (url, title) {
     let promise;
-    if (url in this.background.savedPosts === true){
+    if (url in this.background.savedPosts === true) {
       // Existing post
       let post = this.background.savedPosts[url];
       promise = this.showPost(post, false);
     } else {
       // New post
       let post = {
-        url : url, 
+        url : url,
         description : title,
-        extended : "",
-        tags: "" ,
+        extended : '',
+        tags: '',
         shared: this._defaults.private ? 'no' : 'yes',
-        toread: this._defaults.readlater ? 'yes' : 'no',
+        toread: this._defaults.readlater ? 'yes' : 'no'
       };
       this.showPost(post, true);
-      promise = this.pinboard.posts.add(post)
+      promise = this.pinboard.posts
+        .add(post)
         .then(response => {
           this.background.savedPosts[url] = post;
-      });
+        });
     }
     return promise
-        .then(() => this.setupTags())
-        .catch(error => {
-          this.errorMessage('Add failed: ' + error.message);
-          this.deactivateIcon();
-          this.headingEl.textContent = 'Pinboard';
+      .then(() => this.setupTags())
+      .catch(error => {
+        this.errorMessage('Add failed: ' + error.message);
+        this.deactivateIcon();
+        this.headingEl.textContent = 'Pinboard';
       });
   }
 
-  updatePost (post){
+  updatePost (post) {
     let data = {'replace' : 'yes'};
-    for (let prop in post){
+    for (let prop in post) {
       data[prop] = post[prop];
     }
     return this.pinboard.posts.add(data).then(response => {
@@ -162,7 +164,7 @@ class Popup {
     });
   }
 
-  deletePost (url){
+  deletePost (url) {
     return this.pinboard.posts.delete({
       url : url
     }).then(response => {
@@ -173,7 +175,7 @@ class Popup {
     });
   }
 
-  setupTags (){
+  setupTags () {
     var tagSuggest;
     return this.pinboard.tags.get().then(response => {
       tagSuggest = new TagSuggest(Object.keys(response), this.tagsEl);
@@ -182,7 +184,7 @@ class Popup {
     });
   }
 
-  errorMessage (message){
+  errorMessage (message) {
     this.errorEl.textContent = message;
   }
 
@@ -190,7 +192,7 @@ class Popup {
 
 /* Init */
 document.addEventListener('DOMContentLoaded', ev => {
-  chrome.tabs.query({ active : true }, tabs => {
+  chrome.tabs.query({active : true}, tabs => {
     let popup = new Popup(tabs[0]);
     // TODO: fetch the private and read later default options
     chrome.storage.sync.get(['apitoken', 'private', 'readlater', 'showcheckboxes'], data => {
@@ -198,11 +200,11 @@ document.addEventListener('DOMContentLoaded', ev => {
         popup.showLoginForm();
         return;
       }
-      if (data.showcheckboxes){
+      if (data.showcheckboxes) {
         popup.showCheckboxes();
       }
       popup.login(data.apitoken);
-      popup.defaults({'private' : data.private, 'readlater': data.readlater });
+      popup.defaults({'private' : data.private, 'readlater': data.readlater});
       popup.getOrCreatePost(tabs[0].url, tabs[0].title);
     });
   });
