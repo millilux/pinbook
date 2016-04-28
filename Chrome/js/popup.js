@@ -87,8 +87,7 @@ class Popup {
     this.loginFormEl.style.display = 'none';
     this.editFormEl.style.display = 'block';
     document.getElementById('currentUser').style.display = 'block';
-    //document.getElementById('currentUser').textContent = this.pinboard.username;
-    document.getElementById('currentUser').textContent = 'jonathandoe';
+    document.getElementById('currentUser').textContent = this.pinboard.username;
 
     this.titleEl.value = post.description;
     this.descriptionEl.value = post.extended;
