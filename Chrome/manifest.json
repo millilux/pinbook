@@ -1,6 +1,6 @@
 {
     "manifest_version": 2,
-    "name": "Pinbook",
+    "name": "Pinbook: Pinboard bookmarking",
     "description": "Add bookmarks to Pinboard as easily as regular Chrome bookmarks.",
     "version": "1.0.2",
     "icons": {
