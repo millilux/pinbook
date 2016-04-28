@@ -1,3 +1,4 @@
+'use strict';
 
 class PinboardError extends Error {
   constructor (message) {

@@ -1,3 +1,5 @@
+'use strict';
+
 class TagSuggest {
   constructor (tags, inputElement, containerId) {
     this.tags = tags;
