@@ -1,7 +1,7 @@
 body {font: 11px Helvetica, sans-serif; margin: 15px 20px; min-width: 25em; overflow-x: hidden;}
 h3 {margin-bottom: 0; font-size: 120%;}
 #currentUser {display: none; margin-top: 3px; color: #aaa;}
-#login {display: none;}
+#login {display: none; line-height: 1.4em;}
 #checkboxes {display: none;}
 #options {float: right; margin: 0; padding: 0; opacity: 0.25; cursor: pointer;}
 #options img {height: 14px; width: 14px;}

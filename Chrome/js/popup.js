@@ -87,7 +87,8 @@ class Popup {
     this.loginFormEl.style.display = 'none';
     this.editFormEl.style.display = 'block';
     document.getElementById('currentUser').style.display = 'block';
-    document.getElementById('currentUser').textContent = this.pinboard.username;
+    //document.getElementById('currentUser').textContent = this.pinboard.username;
+    document.getElementById('currentUser').textContent = 'jonathandoe';
 
     this.titleEl.value = post.description;
     this.descriptionEl.value = post.extended;
@@ -201,7 +202,7 @@ document.addEventListener('DOMContentLoaded', ev => {
     }
 
     chrome.storage.sync.get(['apitoken', 'private', 'readlater', 'showcheckboxes'], data => {
-      if (!data.hasOwnProperty('apitoken')) {
+      if (!data.hasOwnProperty('apitoken') || !data.apitoken) {
         popup.showLoginForm();
         return;
       }
