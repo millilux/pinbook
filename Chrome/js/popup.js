@@ -100,15 +100,15 @@ class Popup {
   }
 
   activateIcon(callback) {
-    chrome.browserAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
-      chrome.browserAction.setTitle({tabId : this.activeTab.id, title : 'Edit'});
+    chrome.browserAction.setIcon({ tabId: this.activeTab.id, path: 'images/icon_active.png' }, () => {
+      chrome.browserAction.setTitle({ tabId: this.activeTab.id, title: 'Edit' });
       if (callback) callback();
     });
   }
 
   deactivateIcon (callback) {
-    chrome.browserAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_deactive.png'}, () => {
-      chrome.browserAction.setTitle({tabId : this.activeTab.id, title : 'Save current URL to Pinboard.in'});
+    chrome.browserAction.setIcon({ tabId: this.activeTab.id, path: 'images/icon_deactive.png' }, () => {
+      chrome.browserAction.setTitle({ tabId: this.activeTab.id, title: 'Save current URL to Pinboard.in' });
       if (callback) callback();
     });
   }
@@ -146,7 +146,7 @@ class Popup {
   }
 
   updatePost(post) {
-    const data = {'replace' : 'yes'};
+    const data = { replace: 'yes' };
     for (let prop in post) {
       data[prop] = post[prop];
     }
@@ -171,9 +171,8 @@ class Popup {
   }
 
   setupTags() {
-    var tagSuggest;
     return this.pinboard.tags.get().then(response => {
-      tagSuggest = new TagSuggest(Object.keys(response), this.tagsEl);
+      this.tagSuggest = new TagSuggest(Object.keys(response), this.tagsEl);
     }).catch(error => {
       this.errorMessage('Couldn\'t fetch tags: ' + error.message);
     });
