@@ -9,6 +9,6 @@ label {margin-right: 5px;}
 input[type=text] {width: 25em; padding: 1px 2px;}
 input[type=checkbox] {margin: 7px 0;}
 button[type=submit] {}
-textarea {width: 25em; height: 4.6em; border-color: #ccc; padding: 4px;}
+textarea {font: 11px Helvetica, sans-serif; width: 25em; height: 4.6em; border-color: #ccc; padding: 4px;}
 .error {color: red; font-weight: bold;}
 .tagSuggest {font-size: 11px;}
