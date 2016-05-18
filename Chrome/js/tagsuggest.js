@@ -7,7 +7,7 @@ class TagSuggest {
     this.inputEl = inputElement;
     this.containerEl = document.createElement('div');
     this.containerEl.className = 'tagSuggest';
-    if (containerId){
+    if (containerId) {
       this.containerEl.id = containerId;
     }
 
@@ -39,11 +39,11 @@ class TagSuggest {
     this.cursor = -1;
   }
 
-  getSuggestions (text){
+  getSuggestions (text) {
     let suggestions = [];
     let regex = new RegExp('^' + text, 'i');
 
-    if (text.length > 0){
+    if (text.length > 0) {
       for (let tag of this.tags) {
         if (tag.match(regex)) {
           suggestions.push(tag);
@@ -62,7 +62,7 @@ class TagSuggest {
   }
 
   nextSuggestion () {
-    if (this.cursor < this.suggestions.length-1) {
+    if (this.cursor < this.suggestions.length - 1) {
       this.cursor += 1;
     }
     return this.suggestions[this.cursor];
@@ -76,33 +76,33 @@ class TagSuggest {
     // Replace the partly entered user string with the currently selected suggestion
     let enteredTags = this.inputEl.value.split(/\s+/);
     enteredTags[enteredTags.length - 1] = this.currentSuggestion();
-    this.inputEl.value = enteredTags.join(" ") + " ";
+    this.inputEl.value = enteredTags.join(' ') + ' ';
     this.inputEl.focus();
     this.close();
   }
 
   onKeyDown (event) {
-    if (event.keyIdentifier === "U+0009" && this.isOpen) {
+    if (event.keyIdentifier === 'U+0009' && this.isOpen) {
       // Use current suggestion when Tab is pressed
       event.preventDefault();
       this.useCurrentSuggestion();
-    } else if (event.keyIdentifier === "Up" && this.isOpen) {
-      // Prevent "Home" behaviour when tag suggest is open
+    } else if (event.keyIdentifier === 'Up' && this.isOpen) {
+      // Prevent 'Home' behaviour when tag suggest is open
       event.preventDefault();
-    } else if (event.keyIdentifier === "Down" && this.isOpen) {
-      // Prevent "End" behaviour when tag suggest is open
+    } else if (event.keyIdentifier === 'Down' && this.isOpen) {
+      // Prevent 'End' behaviour when tag suggest is open
       event.preventDefault();
     }
   }
 
-  onKeyUp (event){
-    if (event.keyIdentifier === "U+0009") {
+  onKeyUp (event) {
+    if (event.keyIdentifier === 'U+0009') {
       event.preventDefault();
-    } else if (event.keyIdentifier === "Up") {
+    } else if (event.keyIdentifier === 'Up') {
       event.preventDefault();
       this.previousSuggestion();
       this.highlight(this.cursor);
-    } else if (event.keyIdentifier === "Down") {
+    } else if (event.keyIdentifier === 'Down') {
       event.preventDefault();
       this.nextSuggestion();
       this.highlight(this.cursor);
@@ -112,16 +112,16 @@ class TagSuggest {
       let lastWord = words[words.length - 1];
       this.getSuggestions(lastWord);
 
-      if (this.cursor == -1 && this.suggestions.length > 0){
+      if (this.cursor == -1 && this.suggestions.length > 0) {
         // First char of this tag has been typed and there's a suggestion available
-        this.open(); 
+        this.open();
       }
       this.render();
     }
   }
 
   onMouseOver (event) {
-    if (event.target.nodeName == 'LI'){
+    if (event.target.nodeName == 'LI') {
       // Highlight suggestion on mouse over
       let nodes = this.containerEl.getElementsByTagName('li');
       let arr = Array.prototype.slice.call(nodes);
@@ -132,7 +132,7 @@ class TagSuggest {
 
   onClick (event) {
     event.preventDefault();
-    if (event.target.nodeName == 'LI'){
+    if (event.target.nodeName == 'LI') {
       this.useCurrentSuggestion();
     }
   }
@@ -152,7 +152,7 @@ class TagSuggest {
   render () {
     if (this.suggestions.length > 0) {
       let lines = [];
-      for (let i = 0; i < this.suggestions.length; i++){
+      for (let i = 0; i < this.suggestions.length; i++) {
         lines.push(
           '<li' + (i == this.cursor ? ' class=selected>' : '>') + this.suggestions[i] + '</li>'
         );
@@ -163,4 +163,4 @@ class TagSuggest {
     }
   }
 
-};
+}

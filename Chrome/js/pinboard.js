@@ -120,15 +120,13 @@ class Pinboard {
 
 /* Helper to create a query string from key/value properties */
 function param (obj) {
-  let qs = '';
   let pairs = [];
   for (let prop in obj) {
     if (obj.hasOwnProperty(prop)) {
       pairs.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
     }
   }
-  qs += pairs.join('&');
-  return qs;
+  return pairs.join('&');
 }
 
 
