@@ -1,8 +1,7 @@
 'use strict';
 
 class Popup {
-  constructor (activeTab) {
-
+  constructor(activeTab) {
     this.background = chrome.extension.getBackgroundPage();
     this.activeTab = activeTab;
 
@@ -23,21 +22,19 @@ class Popup {
     this.connErrorMsg   = 'Could not connect to Pinboard';
 
     this.setupEvents();
-
   }
 
-  setupEvents () {
-
+  setupEvents() {
     // Update post
     this.editFormEl.addEventListener('submit', ev => {
       ev.preventDefault();
       this.updatePost({
-        'url': this.activeTab.url,
-        'description' : this.titleEl.value,
-        'extended' : this.descriptionEl.value,
-        'tags' : this.tagsEl.value,
-        'shared' : this.privateEl.checked ? 'no' : 'yes',
-        'toread' : this.readLaterEl.checked ? 'yes' : 'no'
+        url: this.activeTab.url,
+        description: this.titleEl.value,
+        extended: this.descriptionEl.value,
+        tags: this.tagsEl.value,
+        shared: this.privateEl.checked ? 'no' : 'yes',
+        toread: this.readLaterEl.checked ? 'yes' : 'no',
       });
     });
 
@@ -56,32 +53,31 @@ class Popup {
     this.optionsEl.addEventListener('click', ev => {
       chrome.runtime.openOptionsPage();
     });
-
   }
 
-  login (apitoken) {
+  login(apitoken) {
     this.pinboard = new Pinboard(apitoken);
 
     // Save Pinboard credentials for future API calls
     chrome.storage.sync.set({
-      'apitoken' : apitoken
+      apitoken: apitoken
     });
   }
 
-  showCheckboxes () {
+  showCheckboxes() {
     document.getElementById('checkboxes').style.display = 'block';
   }
 
-  defaults (opts) {
+  defaults(opts) {
     this._defaults = opts;
   }
 
-  showLoginForm () {
+  showLoginForm() {
     this.loginFormEl.style.display = 'block';
     this.editFormEl.style.display = 'none';
   }
 
-  showPost (post, isNew) {
+  showPost(post, isNew) {
     this.activateIcon();
 
     this.loginFormEl.style.display = 'none';
@@ -103,12 +99,11 @@ class Popup {
     });
   }
 
-  activateIcon (callback) {
+  activateIcon(callback) {
     chrome.browserAction.setIcon({tabId : this.activeTab.id, path : 'images/icon_active.png'}, () => {
       chrome.browserAction.setTitle({tabId : this.activeTab.id, title : 'Edit'});
       if (callback) callback();
     });
-
   }
 
   deactivateIcon (callback) {
@@ -118,18 +113,18 @@ class Popup {
     });
   }
 
-  getOrCreatePost (url, title) {
+  getOrCreatePost(url, title) {
     let promise;
     if (url in this.background.savedPosts === true) {
       // Existing post
-      let post = this.background.savedPosts[url];
+      const post = this.background.savedPosts[url];
       promise = this.showPost(post, false);
     } else {
       // New post
-      let post = {
-        url : url,
-        description : title,
-        extended : '',
+      const post = {
+        url: url,
+        description: title,
+        extended: '',
         tags: '',
         shared: this._defaults.private ? 'no' : 'yes',
         toread: this._defaults.readlater ? 'yes' : 'no'
@@ -150,8 +145,8 @@ class Popup {
       });
   }
 
-  updatePost (post) {
-    let data = {'replace' : 'yes'};
+  updatePost(post) {
+    const data = {'replace' : 'yes'};
     for (let prop in post) {
       data[prop] = post[prop];
     }
@@ -175,7 +170,7 @@ class Popup {
     });
   }
 
-  setupTags () {
+  setupTags() {
     var tagSuggest;
     return this.pinboard.tags.get().then(response => {
       tagSuggest = new TagSuggest(Object.keys(response), this.tagsEl);
@@ -184,7 +179,7 @@ class Popup {
     });
   }
 
-  errorMessage (message) {
+  errorMessage(message) {
     this.errorEl.textContent = message;
   }
 
@@ -192,8 +187,8 @@ class Popup {
 
 /* Init */
 document.addEventListener('DOMContentLoaded', ev => {
-  chrome.tabs.query({active : true, currentWindow : true}, tabs => {
-    let popup = new Popup(tabs[0]);
+  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+    const popup = new Popup(tabs[0]);
 
     if (!tabs[0].url.match(/^http/)) {
       popup.errorMessage('Pinboard only saves "http" and "https" pages');
@@ -209,7 +204,7 @@ document.addEventListener('DOMContentLoaded', ev => {
         popup.showCheckboxes();
       }
       popup.login(data.apitoken);
-      popup.defaults({'private' : data.private, 'readlater': data.readlater});
+      popup.defaults({ private: data.private, readlater: data.readlater });
       popup.getOrCreatePost(tabs[0].url, tabs[0].title);
     });
   });

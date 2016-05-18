@@ -1,7 +1,7 @@
 'use strict';
 
 class PinboardError extends Error {
-  constructor (message) {
+  constructor(message) {
     super(message);
     this.name = 'PinboardError';
     this.message = message;
@@ -10,16 +10,16 @@ class PinboardError extends Error {
 
 /* Pinboard API client */
 class Pinboard {
-  constructor (apitoken) {
+  constructor(apitoken) {
     this.apitoken = apitoken;
   }
 
-  static get API_BASE () {
+  static get API_BASE() {
     return 'https://api.pinboard.in/v1';
   }
 
   /* Handles requests to Pinboard API */
-  request (uri, params) {
+  request(uri, params) {
     let url = Pinboard.API_BASE + uri;
     let re = /^https?:\/\//;
 
@@ -38,12 +38,12 @@ class Pinboard {
         reject(new PinboardError('Missing auth token'));
       }
 
-      let xhr = new XMLHttpRequest();
+      const xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
 
-      xhr.onload = function () {
+      xhr.onload = () => {
         if (xhr.status === 200) {
-          var data = JSON.parse(xhr.response);
+          const data = JSON.parse(xhr.response);
           // result_code only appears for actions, rather than queries
           if (data.hasOwnProperty('result_code') && data.result_code !== 'done') {
             reject(new PinboardError(data.result_code));
@@ -55,72 +55,71 @@ class Pinboard {
         }
       };
 
-      xhr.onerror = function () {
+      xhr.onerror = () => {
         reject(new PinboardError('Connection error'));
       };
 
       xhr.send();
     });
-
   }
 
   /* Creates a function that handles requests for a given Pinboard API method */
-  method (uri) {
+  method(uri) {
     return params => {
       return this.request(uri, params || {});
     };
   }
 
-  get username () {
+  get username() {
     return this.apitoken.split(':')[0];
   }
 
-  get apitoken () {
+  get apitoken() {
     return this._apitoken;
   }
 
-  set apitoken (val) {
+  set apitoken(val) {
     this._apitoken = val;
   }
 
-  get posts () {
+  get posts() {
     return {
-      'add': this.method('/posts/add'),
-      'delete': this.method('/posts/delete'),
-      'get': this.method('/posts/get'),
-      'dates': this.method('/posts/dates'),
-      'recent': this.method('/posts/recent'),
-      'all': this.method('/posts/all'),
-      'suggest': this.method('/posts/suggest')
-    }
+      add: this.method('/posts/add'),
+      delete: this.method('/posts/delete'),
+      get: this.method('/posts/get'),
+      dates: this.method('/posts/dates'),
+      recent: this.method('/posts/recent'),
+      all: this.method('/posts/all'),
+      suggest: this.method('/posts/suggest')
+    };
   }
 
-  get tags () {
+  get tags() {
     return {
-      'delete': this.method('/tags/delete'),
-      'get': this.method('/tags/get'),
-      'rename': this.method('/tags/rename')
-    }
+      delete: this.method('/tags/delete'),
+      get: this.method('/tags/get'),
+      rename: this.method('/tags/rename')
+    };
   }
 
-  get user () {
+  get user() {
     return {
-      'secret': this.method('/user/secret'),
-      'api_token': this.method('/tags/api_token')
-    }
+      secret: this.method('/user/secret'),
+      api_token: this.method('/tags/api_token')
+    };
   }
 
-  get notes () {
+  get notes() {
     return {
-      'list': this.method('/notes/list')
-    }
+      list: this.method('/notes/list')
+    };
   }
 
 }
 
 /* Helper to create a query string from key/value properties */
-function param (obj) {
-  let pairs = [];
+function param(obj) {
+  const pairs = [];
   for (let prop in obj) {
     if (obj.hasOwnProperty(prop)) {
       pairs.push(encodeURIComponent(prop) + '=' + encodeURIComponent(obj[prop]));
@@ -128,5 +127,3 @@ function param (obj) {
   }
   return pairs.join('&');
 }
-
-

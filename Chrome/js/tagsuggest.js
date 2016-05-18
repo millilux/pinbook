@@ -1,7 +1,7 @@
 'use strict';
 
 class TagSuggest {
-  constructor (tags, inputElement, containerId) {
+  constructor(tags, inputElement, containerId) {
     this.tags = tags;
     this.suggestions = [];
     this.inputEl = inputElement;
@@ -25,13 +25,13 @@ class TagSuggest {
     this.containerEl.addEventListener('click', this.onClick.bind(this));
   }
 
-  open () {
+  open() {
     this.containerEl.style.display = 'block';
     this.isOpen = true;
     this.cursor = 0;
   }
 
-  close () {
+  close() {
     this.containerEl.style.display = 'none';
     this.containerEl.innerHTML = '';
     this.suggestions.length = 0;
@@ -39,9 +39,9 @@ class TagSuggest {
     this.cursor = -1;
   }
 
-  getSuggestions (text) {
-    let suggestions = [];
-    let regex = new RegExp('^' + text, 'i');
+  getSuggestions(text) {
+    const suggestions = [];
+    const regex = new RegExp('^' + text, 'i');
 
     if (text.length > 0) {
       for (let tag of this.tags) {
@@ -54,34 +54,34 @@ class TagSuggest {
     this.suggestions = suggestions;
   }
 
-  previousSuggestion () {
+  previousSuggestion() {
     if (this.cursor > 0) {
       this.cursor -= 1;
     }
     return this.suggestions[this.cursor];
   }
 
-  nextSuggestion () {
+  nextSuggestion() {
     if (this.cursor < this.suggestions.length - 1) {
       this.cursor += 1;
     }
     return this.suggestions[this.cursor];
   }
 
-  currentSuggestion () {
+  currentSuggestion() {
     return this.suggestions[this.cursor];
   }
 
-  useCurrentSuggestion () {
+  useCurrentSuggestion() {
     // Replace the partly entered user string with the currently selected suggestion
-    let enteredTags = this.inputEl.value.split(/\s+/);
+    const enteredTags = this.inputEl.value.split(/\s+/);
     enteredTags[enteredTags.length - 1] = this.currentSuggestion();
     this.inputEl.value = enteredTags.join(' ') + ' ';
     this.inputEl.focus();
     this.close();
   }
 
-  onKeyDown (event) {
+  onKeyDown(event) {
     if (event.keyIdentifier === 'U+0009' && this.isOpen) {
       // Use current suggestion when Tab is pressed
       event.preventDefault();
@@ -95,7 +95,7 @@ class TagSuggest {
     }
   }
 
-  onKeyUp (event) {
+  onKeyUp(event) {
     if (event.keyIdentifier === 'U+0009') {
       event.preventDefault();
     } else if (event.keyIdentifier === 'Up') {
@@ -108,11 +108,11 @@ class TagSuggest {
       this.highlight(this.cursor);
     } else {
       // Get suggestions for the current word fragment
-      let words = event.target.value.split(/\s+/);
-      let lastWord = words[words.length - 1];
+      const words = event.target.value.split(/\s+/);
+      const lastWord = words[words.length - 1];
       this.getSuggestions(lastWord);
 
-      if (this.cursor == -1 && this.suggestions.length > 0) {
+      if (this.cursor === -1 && this.suggestions.length > 0) {
         // First char of this tag has been typed and there's a suggestion available
         this.open();
       }
@@ -120,24 +120,24 @@ class TagSuggest {
     }
   }
 
-  onMouseOver (event) {
-    if (event.target.nodeName == 'LI') {
+  onMouseOver(event) {
+    if (event.target.nodeName === 'LI') {
       // Highlight suggestion on mouse over
-      let nodes = this.containerEl.getElementsByTagName('li');
-      let arr = Array.prototype.slice.call(nodes);
+      const nodes = this.containerEl.getElementsByTagName('li');
+      const arr = Array.prototype.slice.call(nodes);
       this.cursor = arr.indexOf(event.target);
       this.highlight(this.cursor);
     }
   }
 
-  onClick (event) {
+  onClick(event) {
     event.preventDefault();
-    if (event.target.nodeName == 'LI') {
+    if (event.target.nodeName === 'LI') {
       this.useCurrentSuggestion();
     }
   }
 
-  highlight (index) {
+  highlight(index) {
     // Clear the currently highlighted element
     let selectedEl = this.containerEl.querySelector('.selected');
     if (selectedEl) {
@@ -149,12 +149,12 @@ class TagSuggest {
     selectedEl.className = 'selected';
   }
 
-  render () {
+  render() {
     if (this.suggestions.length > 0) {
-      let lines = [];
+      const lines = [];
       for (let i = 0; i < this.suggestions.length; i++) {
         lines.push(
-          '<li' + (i == this.cursor ? ' class=selected>' : '>') + this.suggestions[i] + '</li>'
+          '<li' + (i === this.cursor ? ' class=selected>' : '>') + this.suggestions[i] + '</li>'
         );
       }
       this.containerEl.innerHTML = '<ul>' + lines.join('') + '</ul>';

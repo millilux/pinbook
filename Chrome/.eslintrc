@@ -11,24 +11,5 @@
   "globals": {
     "chrome": false
   },
-  "extends": "eslint:recommended",
-  "rules": {
-    "array-bracket-spacing": "warn",
-    "block-spacing": "warn",
-    "comma-spacing": "warn",
-    "computed-property-spacing": "warn",
-    "eol-last": "warn",
-    "indent": ["warn", 2],
-    "keyword-spacing": "warn",
-    "linebreak-style": "warn",
-    "no-spaced-func": "warn",
-    "no-trailing-spaces": "warn",
-    "quotes": ["warn", "single"],
-    "space-in-parens": "warn",
-    "object-curly-spacing": "warn",
-    "semi-spacing": "warn",
-    "space-before-blocks": "warn",
-    "space-before-function-paren": "warn",
-    "space-infix-ops": "warn"
-  }
+  "extends": "airbnb"
 }

@@ -1,11 +1,11 @@
 (function() {
   'use strict';
 
-  function save_options() {
-    let apitoken = document.getElementById('apitoken').value;
-    let privateDefault = document.getElementById('private').checked;
-    let readLaterDefault = document.getElementById('readlater').checked;
-    let showCheckboxes = document.getElementById('showcheckboxes').checked;
+  function saveOptions() {
+    const apitoken = document.getElementById('apitoken').value;
+    const privateDefault = document.getElementById('private').checked;
+    const readLaterDefault = document.getElementById('readlater').checked;
+    const showCheckboxes = document.getElementById('showcheckboxes').checked;
 
     chrome.storage.sync.set({
       apitoken: apitoken,
@@ -14,19 +14,19 @@
       showcheckboxes: showCheckboxes
     }, () => {
       // Update status to let user know options were saved.
-      let status = document.getElementById('status');
+      const status = document.getElementById('status');
       status.textContent = 'Ok!';
       status.className = 'success';
-      setTimeout(function() {
+      setTimeout(() => {
         status.textContent = '';
         status.className = '';
       }, 800);
     });
   }
 
-  function restore_options() {
+  function restoreOptions() {
     chrome.storage.sync.get({
-      apitoken: "",
+      apitoken: '',
       private: true,
       readlater: false,
       showcheckboxes: true
@@ -38,7 +38,6 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', restore_options);
-  document.getElementById('save').addEventListener('click', save_options);
-
+  document.addEventListener('DOMContentLoaded', restoreOptions);
+  document.getElementById('save').addEventListener('click', saveOptions);
 }());
