@@ -1,5 +1,5 @@
 body {margin: 15px 20px; min-width: 25em; overflow-x: hidden;}
-body, input, label, textarea, button, .tagSuggest {font: 11px "Segoe UI", "Helvetica Neue", Helvetica, sans-serif;}
+body, input, label, textarea, button, .tagSuggest {font: 11px 'Segoe UI', 'Helvetica Neue', Helvetica, sans-serif;}
 h3 {margin-bottom: 0; font-size: 120%;}
 #currentUser {display: none; margin-top: 3px; color: #aaa;}
 #login {display: none; line-height: 1.4em;}
