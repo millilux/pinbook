@@ -1,4 +1,5 @@
-body {font: 11px Helvetica, sans-serif; margin: 15px 20px; min-width: 25em; overflow-x: hidden;}
+body {margin: 15px 20px; min-width: 25em; overflow-x: hidden;}
+body, input, label, textarea, button, .tagSuggest {font: 11px "Segoe UI", "Helvetica Neue", Helvetica, sans-serif;}
 h3 {margin-bottom: 0; font-size: 120%;}
 #currentUser {display: none; margin-top: 3px; color: #aaa;}
 #login {display: none; line-height: 1.4em;}
@@ -6,9 +7,9 @@ h3 {margin-bottom: 0; font-size: 120%;}
 #options {float: right; margin: 0; padding: 0; opacity: 0.25; cursor: pointer;}
 #options img {height: 14px; width: 14px;}
 label {margin-right: 5px;}
-input[type=text] {width: 25em; padding: 1px 2px;}
+input, textarea {border: 1px solid #ccc;}
+input[type=text] {width: 25em; padding: 4px;}
 input[type=checkbox] {margin: 7px 0;}
-button[type=submit] {}
-textarea {font: 11px Helvetica, sans-serif; width: 25em; height: 4.6em; border-color: #ccc; padding: 4px;}
+textarea {width: 25em; height: 4.6em; padding: 4px;}
+button {padding: 4px 6px;}
 .error {color: red; font-weight: bold;}
-.tagSuggest {font-size: 11px;}
