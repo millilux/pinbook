@@ -4,6 +4,7 @@ class Popup {
   constructor(activeTab) {
     this.background = chrome.extension.getBackgroundPage();
     this.activeTab = activeTab;
+    this.errorOccurred = false;
 
     // Cached DOM elements
     this.editFormEl     = document.getElementById('editPost');
@@ -25,17 +26,23 @@ class Popup {
   }
 
   setupEvents() {
-    // Update post
+    // Submit form / Update post
     this.editFormEl.addEventListener('submit', ev => {
-      ev.preventDefault();
-      this.updatePost({
-        url: this.activeTab.url,
-        description: this.titleEl.value,
-        extended: this.descriptionEl.value,
-        tags: this.tagsEl.value,
-        shared: this.privateEl.checked ? 'no' : 'yes',
-        toread: this.readLaterEl.checked ? 'yes' : 'no',
-      });
+      if (this.errorOccurred) {
+        this.deactivateIcon(() =>
+          window.close()
+        );
+      } else {
+        ev.preventDefault();
+        this.updatePost({
+          url: this.activeTab.url,
+          description: this.titleEl.value,
+          extended: this.descriptionEl.value,
+          tags: this.tagsEl.value,
+          shared: this.privateEl.checked ? 'no' : 'yes',
+          toread: this.readLaterEl.checked ? 'yes' : 'no'
+        });
+      }
     });
 
     // Delete post
@@ -106,7 +113,7 @@ class Popup {
     });
   }
 
-  deactivateIcon (callback) {
+  deactivateIcon(callback) {
     chrome.browserAction.setIcon({ tabId: this.activeTab.id, path: 'images/icon_deactive.png' }, () => {
       chrome.browserAction.setTitle({ tabId: this.activeTab.id, title: 'Save current URL to Pinboard.in' });
       if (callback) callback();
@@ -115,29 +122,29 @@ class Popup {
 
   getOrCreatePost(url, title) {
     let promise;
+    let post;
     if (url in this.background.savedPosts === true) {
       // Existing post
-      const post = this.background.savedPosts[url];
+      post = this.background.savedPosts[url];
       promise = this.showPost(post, false);
     } else {
       // New post
-      const post = {
+      post = {
         url: url,
         description: title,
         extended: '',
         tags: '',
         shared: this._defaults.private ? 'no' : 'yes',
-        toread: this._defaults.readlater ? 'yes' : 'no'
+        toread: this._defaults.readlater ? 'yes' : 'no',
       };
       this.showPost(post, true);
-      promise = this.pinboard.posts
-        .add(post)
-        .then(response => {
-          this.background.savedPosts[url] = post;
-        });
+      promise = this.pinboard.posts.add(post);
     }
     return promise
-      .then(() => this.setupTags())
+      .then(() => {
+        this.background.savedPosts[url] = post;
+        this.setupTags();
+      })
       .catch(error => {
         this.errorMessage('Add failed: ' + error.message);
         this.deactivateIcon();
@@ -159,7 +166,7 @@ class Popup {
     });
   }
 
-  deletePost (url) {
+  deletePost(url) {
     return this.pinboard.posts.delete({
       url : url
     }).then(response => {
@@ -173,13 +180,15 @@ class Popup {
   setupTags() {
     return this.pinboard.tags.get().then(response => {
       this.tagSuggest = new TagSuggest(Object.keys(response), this.tagsEl);
-    }).catch(error => {
-      this.errorMessage('Couldn\'t fetch tags: ' + error.message);
     });
+    // .catch(error => {
+    //   this.errorMessage('Couldn\'t fetch tags: ' + error.message);
+    // });
   }
 
   errorMessage(message) {
     this.errorEl.textContent = message;
+    this.errorOccurred = true;
   }
 
 }
