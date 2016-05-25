@@ -43,7 +43,14 @@ class Pinboard {
 
       xhr.onload = () => {
         if (xhr.status === 200) {
-          const data = JSON.parse(xhr.response);
+          let data;
+          try {
+            data = JSON.parse(xhr.response);
+          } catch (SyntaxError) {
+            // Pinboard API returns XHTML when it's down...
+            reject(new PinboardError('Pinboard API appears to be down'));
+            return;
+          }
           // result_code only appears for actions, rather than queries
           if (data.hasOwnProperty('result_code') && data.result_code !== 'done') {
             reject(new PinboardError(data.result_code));
