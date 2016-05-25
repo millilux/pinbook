@@ -31,15 +31,20 @@
         return;
       }
       const pinboard = new Pinboard(data.apitoken);
-      pinboard.posts.get({ url : tab.url }).then(data => {
-        if (data.posts.length > 0) {
-          showActive(tab.id);
-          window.savedPosts[tab.url] = data.posts[0];    // Cache the post info incase the user clicks the popup
-        } else {
-          showDeactive(tab.id);
-          delete window.savedPosts[tab.url];             // Clear any cache entry for this post
-        }
-      });
+      pinboard.posts
+        .get({ url : tab.url })
+        .then(data => {
+          if (data.posts.length > 0) {
+            showActive(tab.id);
+            window.savedPosts[tab.url] = data.posts[0];    // Cache the post info incase the user clicks the popup
+          } else {
+            showDeactive(tab.id);
+            delete window.savedPosts[tab.url];             // Clear any cache entry for this post
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
     });
   }
 
