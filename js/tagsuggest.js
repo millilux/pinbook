@@ -82,27 +82,27 @@ class TagSuggest {
   }
 
   onKeyDown(event) {
-    if (event.keyIdentifier === 'U+0009' && this.isOpen) {
+    if (event.key === 'Tab' && this.isOpen) {
       // Use current suggestion when Tab is pressed
       event.preventDefault();
       this.useCurrentSuggestion();
-    } else if (event.keyIdentifier === 'Up' && this.isOpen) {
+    } else if (event.key === 'ArrowUp' && this.isOpen) {
       // Prevent 'Home' behaviour when tag suggest is open
       event.preventDefault();
-    } else if (event.keyIdentifier === 'Down' && this.isOpen) {
+    } else if (event.key === 'ArrowDown' && this.isOpen) {
       // Prevent 'End' behaviour when tag suggest is open
       event.preventDefault();
     }
   }
 
   onKeyUp(event) {
-    if (event.keyIdentifier === 'U+0009') {
+    if (event.key === 'Tab') {
       event.preventDefault();
-    } else if (event.keyIdentifier === 'Up') {
+    } else if (event.key === 'ArrowUp') {
       event.preventDefault();
       this.previousSuggestion();
       this.highlight(this.cursor);
-    } else if (event.keyIdentifier === 'Down') {
+    } else if (event.key === 'ArrowDown') {
       event.preventDefault();
       this.nextSuggestion();
       this.highlight(this.cursor);
